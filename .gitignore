@@ -1,0 +1,16 @@
+# Personal device data — never commit, never upload
+backups/
+investigation/
+firmware/original/
+firmware/work/
+*.bin
+*.img
+
+# Large binaries
+*.apk
+*.zip
+
+# Tools / OS
+.DS_Store
+upstream/
+firmware/extracted/
