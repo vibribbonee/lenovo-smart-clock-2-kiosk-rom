@@ -232,20 +232,8 @@ public class NavService extends AccessibilityService {
         back.setOnClickListener(v -> { hideBar(); performGlobalAction(GLOBAL_ACTION_BACK); });
         TextView home = button("●", "Home");
         home.setOnClickListener(v -> { hideBar(); performGlobalAction(GLOBAL_ACTION_HOME); });
-        TextView settings = button("⚙", "Settings (hold)");
-        settings.setOnClickListener(v -> {
-            Toast.makeText(this, "Hold to open Settings", Toast.LENGTH_SHORT).show();
-            restartTimer();
-        });
-        settings.setOnLongClickListener(v -> {
-            hideBar();
-            Intent i = new Intent(Settings.ACTION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(i);
-            return true;
-        });
         bar.addView(back);
         bar.addView(home);
-        bar.addView(settings);
         bar.setOnTouchListener((v, e) -> {
             if (e.getActionMasked() == MotionEvent.ACTION_OUTSIDE) { hideBar(); return true; }
             return false;

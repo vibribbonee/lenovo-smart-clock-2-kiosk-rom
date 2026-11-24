@@ -16,7 +16,7 @@ Porting AOSP 10 SystemUI would mean building it against this MTK/Lenovo‑modifi
 ## Recommended design: small dedicated "Kiosk Nav" system app
 A ~100 KB app, separate from Kiosk Satellite so it keeps working when the kiosk crashes:
 - **AccessibilityService** with a `TYPE_ACCESSIBILITY_OVERLAY` edge strip (~12 px, bottom edge, configurable). Accessibility overlays don't need `SYSTEM_ALERT_WINDOW` and sit above normal apps.
-- **Swipe up from the bottom** → a translucent button bar slides in with **Back · Home · Settings** (optionally Wi‑Fi and Volume/Brightness); auto‑hides after a few seconds or on outside touch. This matches the requested "buttons appear on swipe from bottom".
+- **Swipe up from the bottom** → a translucent button bar slides in with **Back · Home** (Android Settings moved to the quick panel: hold the Settings tile); auto‑hides after a few seconds or on outside touch. This matches the requested "buttons appear on swipe from bottom".
 - Back → `performGlobalAction(GLOBAL_ACTION_BACK)`; Home → `GLOBAL_ACTION_HOME` (both handled by system_server without SystemUI). Recents → *not available* (needs SystemUI) — deliberately omitted.
 - Settings → `startActivity(Settings.ACTION_SETTINGS)`; optionally guarded by a long‑press or PIN so casual users don't land in Settings.
 - Optional volume/brightness mini‑panel to replace the assistant's volume UI (XDA: after removing assistant the volume keys lose their default behaviour).

@@ -13,8 +13,8 @@ Built from stock firmware **1.2.2.627** and running daily on a real clock (Kiosk
 | **Kiosk Satellite** | the only home app, starts on boot, recovers after crashes, updated automatically from its GitHub releases (signature-checked) |
 | **Modern WebView** | Google WebView you supply (tested: 157) replaces the 2019 WebView 74; updatable |
 | **Voice that works** | ClockBridge holds the mic at 48 kHz stereo from early boot, working around a MediaTek MT8167 capture bug ([details](docs/PERFORMANCE_BASELINE.md)) |
-| **Navigation** | swipe up from the bottom edge: Back · Home · Settings (the firmware has no SystemUI) |
-| **Quick settings** | swipe down from the top edge: brightness + Auto, volume, dock light, Wi‑Fi, Bluetooth, Night light, screen off (tap to wake), restart |
+| **Navigation** | swipe up from the bottom edge: Back · Home (the firmware has no SystemUI) |
+| **Quick settings** | swipe down from the top edge: brightness + Auto, volume, dock light, Wi‑Fi, Bluetooth, Night light, screen off (tap to wake), restart, Settings (tap: clock settings, hold: Android Settings) |
 | **Hardware** | volume keys with click; hold Vol+ = voice assistant, hold Vol− = dock light; mic‑switch indicator (several styles); tap‑on‑top and dock events |
 | **Home Assistant** | HTTP API + webhook events for dock light, phone charging, screen, settings — [docs/HOME_ASSISTANT.md](docs/HOME_ASSISTANT.md) |
 | **Out of the box** | first boot after flash/reset sets home app, keyboard, nav bar, disables leftovers, no screen timeout — no Google setup |

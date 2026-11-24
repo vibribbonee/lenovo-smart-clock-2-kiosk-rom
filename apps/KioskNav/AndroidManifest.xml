@@ -2,11 +2,11 @@
 <!--
   KioskNav: the stock firmware has no SystemUI, so there is no navigation bar or gesture handling.
   This accessibility service draws a thin strip along the bottom edge; swiping up from it shows a
-  Back / Home / Settings bar. Runs independently of Kiosk Satellite so it works when the kiosk crashes.
+  Back / Home bar. Runs independently of Kiosk Satellite so it works when the kiosk crashes.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.kioskclock.nav"
-    android:versionCode="16"
+    android:versionCode="17"
     android:versionName="0.8.2">
 
     <uses-sdk android:minSdkVersion="29" android:targetSdkVersion="29" />

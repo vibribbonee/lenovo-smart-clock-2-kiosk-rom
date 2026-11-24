@@ -113,8 +113,9 @@ final class QuickPanel {
         TextView off = tile(v -> { hide(); svc.blackout(); }, null);
         off.setOnLongClickListener(v -> { hide(); control(new Intent(CONTROL).putExtra("cmd", "reboot")); return true; });
         setTile(off, "\uD83C\uDF19", "Screen off", "Hold: restart", false);
-        TextView clock = tile(v -> { hide(); settings.show(); }, null);
-        setTile(clock, "\u2699", "Clock", "Settings", false);
+        // Tap = the ROM's own settings; hold = Android Settings (the nav bar has only Back / Home).
+        TextView clock = tile(v -> { hide(); settings.show(); }, Settings.ACTION_SETTINGS);
+        setTile(clock, "\u2699", "Settings", "Hold: Android", false);
         for (TextView t : new TextView[]{wifi, bt, night, off, clock}) r4.addView(t, weight());
         root.addView(r4);
 
