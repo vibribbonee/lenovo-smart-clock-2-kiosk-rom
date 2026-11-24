@@ -21,9 +21,21 @@ import java.util.Map;
  *   GET  /api/status            -> mic anchor state, dock firmware, WebView and Kiosk Satellite versions
  *   POST /api/update/check      -> check GitHub for a newer Kiosk Satellite now
  *   POST /api/screen/off|on     -> KioskNav black screen (backlight 0) / wake
+ *   GET  /api/settings          -> the kioskclock_* settings below
+ *   POST /api/settings?key=K&value=V  -> change one (whitelisted keys, validated values; applies live)
  * One request per connection, small bodies only, 5 s socket timeout.
  */
 final class HttpApi extends Thread {
+    /** Settings Home Assistant may change via /api/settings, each with the values it accepts. */
+    static final java.util.Map<String, java.util.regex.Pattern> SETTINGS = new java.util.LinkedHashMap<>();
+    static {
+        SETTINGS.put("kioskclock_mic_indicator", java.util.regex.Pattern.compile("dot|dot_quiet|google|pill|edge|banner|hidden"));
+        SETTINGS.put("kioskclock_mic_color", java.util.regex.Pattern.compile("#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})"));
+        SETTINGS.put("kioskclock_mic_size", java.util.regex.Pattern.compile("[0-9]{1,2}"));
+        SETTINGS.put("kioskclock_hold_volume_up", java.util.regex.Pattern.compile("voice|dock_light|screen_off|none"));
+        SETTINGS.put("kioskclock_hold_volume_down", java.util.regex.Pattern.compile("voice|dock_light|screen_off|none"));
+    }
+
     private final BridgeService svc;
     private final int port;
     private ServerSocket server;
@@ -105,6 +117,21 @@ final class HttpApi extends Thread {
             svc.sendBroadcast(new android.content.Intent("org.kioskclock.nav.SCREEN").setPackage("org.kioskclock.nav")
                     .putExtra("on", path.endsWith("/on")));
             reply(c, 200, "{\"screen\":\"" + (path.endsWith("/on") ? "on" : "black") + "\"}");
+        } else if (path.equals("/api/settings") && method.equals("GET")) {
+            StringBuilder sb = new StringBuilder("{");
+            for (String k : SETTINGS.keySet()) {
+                String v = android.provider.Settings.Global.getString(svc.getContentResolver(), k);
+                if (sb.length() > 1) sb.append(',');
+                sb.append('"').append(k).append("\":").append(v == null ? "null" : "\"" + esc(v) + "\"");
+            }
+            reply(c, 200, sb.append('}').toString());
+        } else if (path.equals("/api/settings") && method.equals("POST")) {
+            String key = params.get("key"), value = params.get("value");
+            java.util.regex.Pattern allowed = key == null ? null : SETTINGS.get(key);
+            if (allowed == null) { reply(c, 400, "{\"error\":\"unknown key\",\"keys\":\"" + SETTINGS.keySet() + "\"}"); return; }
+            if (value == null || !allowed.matcher(value).matches()) { reply(c, 400, "{\"error\":\"invalid value\",\"allowed\":\"" + esc(allowed.pattern()) + "\"}"); return; }
+            android.provider.Settings.Global.putString(svc.getContentResolver(), key, value);
+            reply(c, 200, "{\"" + key + "\":\"" + esc(value) + "\"}");
         } else if (method.equals("POST") && path.equals("/api/update/check")) {
             svc.checkUpdateAsync();
             reply(c, 200, "{\"started\":true}");

@@ -120,9 +120,16 @@ public class OemKeyReceiver extends BroadcastReceiver {
         if (heldKey == null) return;
         holdFired = true;
         if (volumeBefore >= 0) setVolume(volumeBefore);   // a hold is a shortcut, not a volume change
-        String action = VOL_UP.equals(heldKey) ? holdUp : holdDown;
+        String action = VOL_UP.equals(heldKey)
+                ? live("kioskclock_hold_volume_up", holdUp) : live("kioskclock_hold_volume_down", holdDown);
         emit("button", (VOL_UP.equals(heldKey) ? "hold_up" : "hold_down") + ":" + action);
         runShortcut(action);
+    }
+
+    /** Live override from Settings.Global (set via /api/settings), else the provision.json default. */
+    private String live(String key, String def) {
+        String v = android.provider.Settings.Global.getString(svc.getContentResolver(), key);
+        return v == null || v.isEmpty() ? def : v;
     }
 
     private void stepVolume(int dir) {

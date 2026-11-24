@@ -53,8 +53,10 @@ public class NavService extends AccessibilityService {
         dockReceiver = new DockReceiver(panel);
         registerReceiver(dockReceiver, new android.content.IntentFilter(DockReceiver.ACTION));
         micIndicator = new MicIndicator(this);
-        getContentResolver().registerContentObserver(
-                android.provider.Settings.Global.getUriFor(MicIndicator.SETTING), false, new StyleObserver(micIndicator));
+        StyleObserver styleObserver = new StyleObserver(micIndicator);
+        for (String key : new String[]{MicIndicator.SETTING, MicIndicator.COLOR, MicIndicator.SIZE}) {
+            getContentResolver().registerContentObserver(android.provider.Settings.Global.getUriFor(key), false, styleObserver);
+        }
         micReceiver = new MicReceiver(panel, micIndicator);
         registerReceiver(micReceiver, new android.content.IntentFilter(MicReceiver.ACTION));
         addTopStrip();

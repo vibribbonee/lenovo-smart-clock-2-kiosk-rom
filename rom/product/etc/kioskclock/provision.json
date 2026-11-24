@@ -33,7 +33,8 @@
   "global_settings": {
     "auto_time": "1",
     "stay_on_while_plugged_in": "7",
-    "kioskclock_mic_indicator": "pill"
+    "kioskclock_mic_indicator": "dot",
+    "kioskclock_mic_color": "#D93025"
   },
   "time_zone": "Europe/Amsterdam",
   "buttons": {
