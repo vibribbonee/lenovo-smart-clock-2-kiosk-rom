@@ -43,6 +43,14 @@ Four gestures, each set to one action (on the clock: quick panel → **Clock**; 
 Actions: `alarm_snooze` / `alarm_stop` (a ringing Kiosk Satellite alarm, like Lenovo's hard tap; nothing otherwise), `voice`, `play_pause`, `mute` (speaker), `dock_light`, `night_light`, `screen_off`, `screen_toggle`, `ha_event` (only send it to HA), `none`.
 Snooze/stop works offline: KioskNav presses the alarm screen's own Snooze / Stop button. While an alarm rings, Vol ± change the alarm's volume instead of media.
 
+## Wake-up light
+Fades light in over the minutes before the next Kiosk Satellite alarm (ClockBridge 0.9.1+). ClockBridge keeps the schedule (Android's next alarm, which Kiosk sets), so the dock light works without Home Assistant.
+- **What:** `select.…_wake_up_light`: *Off*, *Dock light*, *Home Assistant lights*, *Both* (also on the clock: quick panel → **Clock**).
+- **How long / how bright:** `number.…_wake_up_light_fade_length` (5–60 min, default 20) and `number.…_wake_up_light_dock_limit` (dock light level 1–10). The dock light has only 10 levels, so it steps up every few minutes.
+- **HA lights:** *Settings → Devices & services → Kiosk Clock → Configure*: pick the lights and their brightness at the alarm. They start at 1 % and fade smoothly (transitions where the light supports them).
+- The screen has its own sunrise in Kiosk Satellite's alarm settings.
+- Only alarms set before their fade window start a fade, so a snooze never jumps the light up. Skipping or deleting the alarm puts the lights back; switching a light off (or changing the dock light) during the fade leaves it alone. After the alarm the lights stay on.
+
 If the token changes, HA asks for the new one (*Reconfigure* / repair notice). Removing the integration clears the webhook on the clock.
 
 ## Token
@@ -88,6 +96,9 @@ Settings (`/api/settings`):
 | `kioskclock_hold_volume_down` | same | `dock_light` |
 | `kioskclock_tap_single` | same (0.9.0+) | `alarm_snooze` |
 | `kioskclock_tap_double` | same (0.9.0+) | `alarm_stop` |
+| `kioskclock_wake_light` | `off`, `dock`, `ha`, `both` (0.9.1+) | `off` |
+| `kioskclock_wake_minutes` | 5–60 (0.9.1+) | 20 |
+| `kioskclock_wake_max` | dock light limit 1–10 (0.9.1+) | 10 |
 | `kioskclock_double_tap_ms` | 300–900: how soon the second tap must follow (Fast 300, Relaxed 700); a single tap waits this long (0.9.1+) | 450 |
 
 ## configuration.yaml example (fallback)
@@ -142,7 +153,7 @@ light:
 
 ## Webhook automations (fallback)
 Events arrive as JSON `{"type": "...", "value": "...", "device": "smart-clock-2", "ts": ...}`:
-`tap` (`single`/`double`), `alarm_volume` (0–100, Vol ± while an alarm rings), `dock` (`attached`/`removed`), `phone` (`none`/`present`/`charging`), `mic` (`muted`/`unmuted`), `button` (`hold_up:voice`, …), `volume` (0–100).
+`tap` (`single`/`double`), `wake_light` (`start:SECONDS` / `cancel`), `alarm_volume` (0–100, Vol ± while an alarm rings), `dock` (`attached`/`removed`), `phone` (`none`/`present`/`charging`), `mic` (`muted`/`unmuted`), `button` (`hold_up:voice`, …), `volume` (0–100).
 
 ```yaml
 automation:

@@ -29,6 +29,8 @@ public class BridgeService extends Service {
     private MicAnchor anchor;
     private HttpApi http;
     private Discovery discovery;
+    WakeLight wakeLight;
+    private Thread wakeThread;
     private Thread poller;
     KioskUpdater updater;
     private Thread updaterThread;
@@ -117,6 +119,9 @@ public class BridgeService extends Service {
         http.start();
         discovery = new Discovery(this, HTTP_PORT);
         discovery.start();
+        wakeLight = new WakeLight(this);
+        wakeThread = new Thread(wakeLight, "wake-light");
+        wakeThread.start();
     }
 
     /**
@@ -193,6 +198,8 @@ public class BridgeService extends Service {
         if (oem != null) oem.stop();
         if (anchor != null) anchor.stop();
         if (discovery != null) discovery.stop();
+        if (wakeLight != null) wakeLight.stop();
+        if (wakeThread != null) wakeThread.interrupt();
         if (http != null) http.shutdown();
         if (poller != null) poller.interrupt();
         if (updaterThread != null) updaterThread.interrupt();

@@ -201,6 +201,15 @@
           "normal": "Normal",
           "relaxed": "Relaxed"
         }
+      },
+      "wake_light": {
+        "name": "Wake-up light",
+        "state": {
+          "off": "Off",
+          "dock": "Dock light",
+          "ha": "Home Assistant lights",
+          "both": "Both"
+        }
       }
     },
     "sensor": {
@@ -247,6 +256,30 @@
               "changed": "Changed"
             }
           }
+        }
+      }
+    },
+    "number": {
+      "wake_minutes": {
+        "name": "Wake-up light fade length"
+      },
+      "wake_max": {
+        "name": "Wake-up light dock limit"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Wake-up light",
+        "description": "Home Assistant lights to fade in before the clock's next alarm. The clock decides when: set its Wake-up light to Home Assistant lights or Both, with the fade length.",
+        "data": {
+          "wake_lights": "Lights",
+          "wake_max_pct": "Brightness at the alarm"
+        },
+        "data_description": {
+          "wake_lights": "They start at 1 % and reach the brightness below when the alarm rings.",
+          "wake_max_pct": "Limit, e.g. 60 % for a bedside lamp."
         }
       }
     }

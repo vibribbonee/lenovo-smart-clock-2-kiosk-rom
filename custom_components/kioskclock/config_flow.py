@@ -7,19 +7,26 @@ from typing import Any
 
 import voluptuous as vol
 
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResult, OptionsFlow
 from homeassistant.const import CONF_HOST, CONF_PORT
+from homeassistant.core import callback
+from homeassistant.helpers import selector
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.service_info.zeroconf import ZeroconfServiceInfo
 
 from .api import CannotConnect, InvalidAuth, KioskClockApi, KioskClockError, NotSupported, clean_token
-from .const import CONF_TOKEN, DEFAULT_NAME, DEFAULT_PORT, DOMAIN, LOGGER
+from .const import CONF_TOKEN, CONF_WAKE_LIGHTS, CONF_WAKE_MAX_PCT, DEFAULT_NAME, DEFAULT_PORT, DOMAIN, LOGGER
 
 TOKEN_SCHEMA = vol.Schema({vol.Required(CONF_TOKEN): str})
 
 
 class KioskClockConfigFlow(ConfigFlow, domain=DOMAIN):
     VERSION = 1
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
+        return KioskClockOptionsFlow()
 
     def __init__(self) -> None:
         self._host: str | None = None
@@ -130,4 +137,26 @@ class KioskClockConfigFlow(ConfigFlow, domain=DOMAIN):
             data_schema=TOKEN_SCHEMA,
             errors=errors,
             description_placeholders={"name": entry.title},
+        )
+
+
+class KioskClockOptionsFlow(OptionsFlow):
+    """Home Assistant lights for the wake-up light (the clock decides when; set it to HA or Both there)."""
+
+    async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        if user_input is not None:
+            return self.async_create_entry(data=user_input)
+        schema = vol.Schema(
+            {
+                vol.Optional(CONF_WAKE_LIGHTS, default=[]): selector.EntitySelector(
+                    selector.EntitySelectorConfig(domain="light", multiple=True)
+                ),
+                vol.Required(CONF_WAKE_MAX_PCT, default=100): selector.NumberSelector(
+                    selector.NumberSelectorConfig(min=1, max=100, step=1, unit_of_measurement="%",
+                                                  mode=selector.NumberSelectorMode.SLIDER)
+                ),
+            }
+        )
+        return self.async_show_form(
+            step_id="init", data_schema=self.add_suggested_values_to_schema(schema, self.config_entry.options)
         )

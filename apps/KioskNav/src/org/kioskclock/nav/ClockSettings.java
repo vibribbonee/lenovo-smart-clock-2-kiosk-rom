@@ -31,6 +31,10 @@ final class ClockSettings {
             {"#66FFFFFF", "Dim"}};
     private static final String[][] SIZE = {{"10", "Small"}, {null, "Default"}, {"22", "Large"}};
     private static final String[][] TAP_SPEED = {{"300", "Fast"}, {null, "Normal"}, {"700", "Relaxed"}};
+    private static final String[][] WAKE = {{null, "Off"}, {"dock", "Dock light"}, {"ha", "Home Assistant lights"},
+            {"both", "Both"}};
+    private static final String[][] WAKE_MIN = {{"10", "10 min"}, {null, "20 min"}, {"30", "30 min"}, {"45", "45 min"}};
+    private static final String[][] WAKE_MAX = {{"3", "Low"}, {"6", "Medium"}, {null, "Full"}};
     private static final String[][] HOLD = {{"alarm_snooze", "Snooze alarm"}, {"alarm_stop", "Stop alarm"},
             {"voice", "Voice assistant"}, {"play_pause", "Play / pause"},
             {"mute", "Mute speaker"}, {"dock_light", "Dock light"}, {"night_light", "Night light"},
@@ -93,6 +97,14 @@ final class ClockSettings {
         chips("kioskclock_tap_double", HOLD, "alarm_stop");
         section("Double-tap speed", "How quickly the second tap must follow. Relaxed is easier, but a single tap then waits longer to act.");
         chips("kioskclock_double_tap_ms", TAP_SPEED, null);
+
+        section("Wake-up light", "Fades in before the next Kiosk alarm. The screen has its own sunrise in Kiosk's alarm settings;"
+                + " pick the Home Assistant lights in the Kiosk Clock integration's options.");
+        chips("kioskclock_wake_light", WAKE, null);
+        section("Fade length", null);
+        chips("kioskclock_wake_minutes", WAKE_MIN, null);
+        section("Dock light limit", "How bright the dock light gets by the alarm");
+        chips("kioskclock_wake_max", WAKE_MAX, null);
 
         String ip = ipAddress();
         section("Home Assistant", "Install the Kiosk Clock integration (HACS). The clock is found automatically;"

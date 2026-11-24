@@ -27,6 +27,8 @@ from .const import (
     SETTING_DOUBLE_TAP_MS,
     SETTING_TAP_DOUBLE,
     SETTING_TAP_SINGLE,
+    SETTING_WAKE_LIGHT,
+    WAKE_LIGHT_MODES,
 )
 from .entity import KioskClockEntity
 
@@ -62,6 +64,9 @@ SELECTS = (
     ),
     ClockSelectDescription(
         key="tap_double", setting=SETTING_TAP_DOUBLE, values=_identity(GESTURE_ACTIONS), default_option="alarm_stop"
+    ),
+    ClockSelectDescription(
+        key="wake_light", setting=SETTING_WAKE_LIGHT, values=dict(WAKE_LIGHT_MODES), default_option="off"
     ),
     ClockSelectDescription(
         key="double_tap_speed", setting=SETTING_DOUBLE_TAP_MS, values=dict(DOUBLE_TAP_SPEEDS), default_option="normal"

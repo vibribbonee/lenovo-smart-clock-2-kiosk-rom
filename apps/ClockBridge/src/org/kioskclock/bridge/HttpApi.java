@@ -41,6 +41,9 @@ final class HttpApi extends Thread {
         SETTINGS.put("kioskclock_mic_size", java.util.regex.Pattern.compile("[0-9]{1,2}"));
         for (String key : OemKeyReceiver.GESTURES.values()) SETTINGS.put(key, java.util.regex.Pattern.compile(OemKeyReceiver.ACTIONS));
         SETTINGS.put(OemKeyReceiver.SETTING_DOUBLE_TAP, java.util.regex.Pattern.compile("[3-8][0-9]{2}|900"));
+        SETTINGS.put(WakeLight.MODE, java.util.regex.Pattern.compile("off|dock|ha|both"));
+        SETTINGS.put(WakeLight.MINUTES, java.util.regex.Pattern.compile("[5-9]|[1-5][0-9]|60"));
+        SETTINGS.put(WakeLight.MAX, java.util.regex.Pattern.compile("[1-9]|10"));
     }
 
     private final BridgeService svc;
@@ -119,7 +122,9 @@ final class HttpApi extends Thread {
                     + ",\"kiosk_version\":\"" + esc(String.valueOf(u.installedVersion())) + "\""
                     + ",\"webhook_configured\":" + (svc.webhook.url() != null)
                     + ",\"kiosk_auto_update\":" + u.enabled()
-                    + ",\"kiosk_update_result\":\"" + esc(u.lastResult) + "\",\"kiosk_update_checked\":" + u.lastCheck + "}");
+                    + ",\"kiosk_update_result\":\"" + esc(u.lastResult) + "\",\"kiosk_update_checked\":" + u.lastCheck
+                    + ",\"next_alarm\":" + (svc.wakeLight == null ? 0 : svc.wakeLight.nextAlarm())
+                    + ",\"wake_light_active\":" + (svc.wakeLight != null && svc.wakeLight.active()) + "}");
         } else if (method.equals("POST") && (path.equals("/api/screen/on") || path.equals("/api/screen/off"))) {
             svc.sendBroadcast(new android.content.Intent("org.kioskclock.nav.SCREEN").setPackage("org.kioskclock.nav")
                     .putExtra("on", path.endsWith("/on")));

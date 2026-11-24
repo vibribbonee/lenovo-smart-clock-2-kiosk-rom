@@ -3,6 +3,7 @@
 ## Open: verify on the clock
 - [x] Slam: tap on top snoozes a ringing alarm (with an "Alarm snoozed" banner); Vol ± change the ringing alarm's volume (tested 63 → 42 %).
 - [ ] Double tap stops a ringing alarm (needs two taps within 0.45 s; not tried yet).
+- [ ] Wake-up light: Kiosk alarms show up as Android's next alarm clock (`dumpsys alarm`); dock fade and an HA light fade on a real alarm.
 - [ ] Gestures from the on-clock settings screen and from HA (`/api/gesture`, the *Run … action* buttons).
 - [ ] Home Assistant integration end to end: discovered via mDNS, *Show token*, entities, pushed events, device triggers.
 - [ ] Dock light + phone charging through HA (clock back on the dock).

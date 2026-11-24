@@ -26,6 +26,14 @@ SETTING_HOLD_DOWN: Final = "kioskclock_hold_volume_down"
 SETTING_TAP_SINGLE: Final = "kioskclock_tap_single"
 SETTING_TAP_DOUBLE: Final = "kioskclock_tap_double"
 SETTING_DOUBLE_TAP_MS: Final = "kioskclock_double_tap_ms"
+SETTING_WAKE_LIGHT: Final = "kioskclock_wake_light"
+SETTING_WAKE_MINUTES: Final = "kioskclock_wake_minutes"
+SETTING_WAKE_MAX: Final = "kioskclock_wake_max"
+# option -> value on the clock (None = default, off)
+WAKE_LIGHT_MODES: Final = {"off": None, "dock": "dock", "ha": "ha", "both": "both"}
+# Integration options: HA lights the wake-up light fades in, and how bright they get.
+CONF_WAKE_LIGHTS: Final = "wake_lights"
+CONF_WAKE_MAX_PCT: Final = "wake_max_pct"
 
 # "default" resets a setting to the clock's default (ClockBridge 0.9.0+).
 DEFAULT_VALUE: Final = "default"

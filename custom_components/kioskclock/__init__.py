@@ -20,12 +20,14 @@ from homeassistant.helpers.network import NoURLAvailableError
 from .api import KioskClockApi, KioskClockError, NotSupported
 from .const import CONF_TOKEN, CONF_WEBHOOK_ID, DOMAIN, EVENT_KIOSKCLOCK, LOGGER, SIGNAL_EVENT
 from .coordinator import KioskClockCoordinator
+from .wake import WakeLightRunner
 
 PLATFORMS = [
     Platform.BINARY_SENSOR,
     Platform.BUTTON,
     Platform.EVENT,
     Platform.LIGHT,
+    Platform.NUMBER,
     Platform.SELECT,
     Platform.SENSOR,
 ]
@@ -39,6 +41,7 @@ class KioskClockRuntime:
     api: KioskClockApi
     coordinator: KioskClockCoordinator
     push: bool = False  # the clock accepted our webhook (ClockBridge 0.9.0+)
+    wake: WakeLightRunner | None = None
 
 
 type KioskClockConfigEntry = ConfigEntry[KioskClockRuntime]
@@ -60,7 +63,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: KioskClockConfigEntry) -
         coordinator.info = {}  # ClockBridge before 0.9.0
     _migrate_unique_id(hass, entry, coordinator.info.get("id"))
 
-    entry.runtime_data = KioskClockRuntime(api, coordinator)
+    entry.runtime_data = KioskClockRuntime(api, coordinator, wake=WakeLightRunner(hass, entry))
+    entry.async_on_unload(entry.runtime_data.wake.cancel)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     await _async_setup_webhook(hass, entry)
     return True
@@ -168,6 +172,8 @@ async def _handle_webhook(hass: HomeAssistant, webhook_id: str, request: web.Req
         },
     )
     async_dispatcher_send(hass, SIGNAL_EVENT.format(entry.entry_id), event_type, value)
+    if event_type == "wake_light" and entry.runtime_data.wake is not None:
+        entry.runtime_data.wake.handle(value)
     if event_type in REFRESH_ON:
         await entry.runtime_data.coordinator.async_request_refresh()
     return web.Response(status=200)
