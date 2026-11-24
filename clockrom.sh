@@ -160,7 +160,7 @@ EOF
     confirm "Write the new build to the clock?" update
   fi
   say "When asked: hold BOTH volume keys and plug power in."
-  run_mtk I_AM_AT_THE_CLOCK=yes scripts/flash/mtk_session.sh "$mode"
+  run_mtk I_AM_AT_THE_CLOCK=yes scripts/flash/mtk_session.sh "$mode" || die "Flash not done (see the message above). The clock still has its previous build."
   say "${GRN}Done.${R} First boot after a flash takes a few minutes (orange Lenovo logo). Then see docs/FLASHING.md → After flashing."
 }
 

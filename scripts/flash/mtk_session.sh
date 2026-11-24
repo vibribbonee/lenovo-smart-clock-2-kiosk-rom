@@ -66,3 +66,15 @@ if [ "$MODE" = rehearsal ]; then
 fi
 [ -n "${SUDO_USER:-}" ] && chown -R "$SUDO_USER" "$LOG"
 echo "log: $LOG"
+# mtkclient exits 0 even when it never reached the clock: count what it actually wrote.
+need=$(grep -c '^w ' "$S" || true)
+got=$(tr '\r' '\n' < "$LOG/mtk_output.txt" | grep -c '^Wrote ' || true)
+if [ "$need" -gt 0 ] && [ "$got" -lt "$need" ]; then
+  if [ "$got" -eq 0 ]; then echo "NOTHING WAS WRITTEN: mtkclient did not get a connection to the clock."
+  else echo "INCOMPLETE: only $got of $need partitions were written. Run the same command again before rebooting the clock."; fi
+  if grep -q "Please disconnect" "$LOG/mtk_output.txt"; then
+    echo "The clock was already in download mode when mtkclient started. Unplug its power, wait 5 s, run this again,"
+    echo "and only plug power back in (holding both volume keys) after the 'Now: power off the clock' line."
+  fi
+  exit 3
+fi
