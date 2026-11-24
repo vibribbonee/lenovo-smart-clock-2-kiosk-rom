@@ -105,7 +105,7 @@ final class HttpApi extends Thread {
         } else if (method.equals("GET") && path.equals("/api/status")) {
             android.content.pm.PackageInfo wv = android.webkit.WebView.getCurrentWebViewPackage();
             KioskUpdater u = svc.updater;
-            reply(c, 200, "{\"mic_anchor\":\"" + esc(svc.micState()) + "\",\"dock_service\":" + svc.dock.available()
+            reply(c, 200, "{\"mic_anchor\":\"" + esc(svc.micState()) + "\",\"mic_muted\":" + svc.micMuted + ",\"dock_service\":" + svc.dock.available()
                     + ",\"dock_mcu\":\"" + esc(String.valueOf(svc.dock.mcuVersion())) + "\",\"dock_wireless\":\""
                     + esc(String.valueOf(svc.dock.firmwareVersion())) + "\""
                     + ",\"webview\":\"" + (wv == null ? "none" : esc(wv.packageName + " " + wv.versionName)) + "\""

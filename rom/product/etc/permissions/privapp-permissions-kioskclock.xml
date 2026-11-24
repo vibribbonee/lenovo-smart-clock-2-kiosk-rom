@@ -11,5 +11,6 @@
         <permission name="android.permission.CHANGE_COMPONENT_ENABLED_STATE" />
         <permission name="android.permission.SET_TIME_ZONE" />
         <permission name="android.permission.REBOOT" />
+        <permission name="android.permission.PACKAGE_VERIFICATION_AGENT" />
     </privapp-permissions>
 </permissions>

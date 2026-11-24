@@ -16,6 +16,6 @@ public class MicReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         Boolean muted = intent.hasExtra("muted") ? intent.getBooleanExtra("muted", false) : null;
         panel.onMic(muted);
-        if (muted != null) indicator.set(muted, true);
+        // The indicator follows Settings.Global kioskclock_mic_muted (NavService.MutedObserver).
     }
 }

@@ -13,13 +13,16 @@ ClockBridge runs on the clock and offers a small HTTP API on port **8765** plus 
    ```
 3. Put the token in `secrets.yaml`: `clock_auth: "Bearer YOUR_LONG_RANDOM_TOKEN"`, and the clock's address (give it a fixed DHCP lease).
 
+## Where the settings live
+ClockBridge has no settings screen and doesn't appear in Home Assistant on its own: HA talks to it over the HTTP API below. Add the `rest` / `rest_command` blocks from the example at the end of this page to your HA configuration, and the dock light, phone charging, mic switch and the settings become entities and actions. On the clock itself, the settings can also be changed with `adb shell settings put global <key> <value>`.
+
 ## API
 | Call | Does |
 |---|---|
 | `GET /api/dock` | `{"dock":true,"light":0..10,"phone_present":bool,"phone_charging":bool,"charger_state":n}` |
 | `POST /api/dock/light?level=N` | night light 0–10 |
 | `POST /api/screen/off` / `POST /api/screen/on` | black screen (backlight 0) / wake |
-| `GET /api/status` | mic anchor, dock firmware, WebView and Kiosk Satellite versions, update state |
+| `GET /api/status` | mic anchor, `mic_muted` (mic switch: true/false, null if unknown), dock firmware, WebView and Kiosk Satellite versions, update state |
 | `POST /api/update/check` | check GitHub for a newer Kiosk Satellite now |
 | `GET /api/settings` | the settings below |
 | `POST /api/settings?key=K&value=V` | change one; applies live |

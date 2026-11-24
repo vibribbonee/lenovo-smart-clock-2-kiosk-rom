@@ -37,6 +37,13 @@
     "kioskclock_mic_color": "#D93025"
   },
   "time_zone": "Europe/Amsterdam",
+  "grants": {
+    "_comment": "Applied at every boot (idempotent): special access and runtime permissions, so no taps are needed.",
+    "me.jxl.kiosk_satellite": {
+      "appops": ["android:request_install_packages", "android:get_usage_stats", "android:write_settings", "android:system_alert_window"],
+      "permissions": ["android.permission.READ_LOGS", "android.permission.READ_EXTERNAL_STORAGE", "android.permission.WRITE_EXTERNAL_STORAGE"]
+    }
+  },
   "buttons": {
     "_options": "voice (start Kiosk Satellite listening), dock_light (toggle), screen_off (black screen), none",
     "hold_volume_up": "voice",

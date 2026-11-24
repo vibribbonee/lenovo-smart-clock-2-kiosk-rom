@@ -59,6 +59,10 @@ public class NavService extends AccessibilityService {
         }
         micReceiver = new MicReceiver(panel, micIndicator);
         registerReceiver(micReceiver, new android.content.IntentFilter(MicReceiver.ACTION));
+        // Mic switch position as published by ClockBridge (survives KioskNav restarts).
+        MutedObserver muted = new MutedObserver(this, panel, micIndicator);
+        getContentResolver().registerContentObserver(android.provider.Settings.Global.getUriFor(MutedObserver.KEY), false, muted);
+        muted.apply(false);
         addTopStrip();
         blackout = new Blackout(this);
         screenReceiver = new ScreenReceiver(this);
@@ -148,6 +152,27 @@ public class NavService extends AccessibilityService {
         strip.setBackgroundColor(Color.TRANSPARENT);
         strip.setOnTouchListener(new StripTouch(+1, this::showBar));
         wm.addView(strip, params(STRIP_PX, false));
+    }
+
+    /** Settings.Global kioskclock_mic_muted (1 = switch on mute, 0 = mic on), written by ClockBridge. */
+    private static final class MutedObserver extends android.database.ContentObserver {
+        static final String KEY = "kioskclock_mic_muted";
+        private final android.content.Context ctx;
+        private final QuickPanel panel;
+        private final MicIndicator indicator;
+        private String last;
+        MutedObserver(android.content.Context ctx, QuickPanel panel, MicIndicator indicator) {
+            super(new Handler(Looper.getMainLooper())); this.ctx = ctx; this.panel = panel; this.indicator = indicator;
+        }
+        @Override public void onChange(boolean selfChange) { apply(true); }
+        void apply(boolean announce) {
+            String v = android.provider.Settings.Global.getString(ctx.getContentResolver(), KEY);
+            if (v == null || v.equals(last)) return;
+            last = v;
+            boolean m = "1".equals(v);
+            panel.onMic(m);
+            indicator.set(m, announce);
+        }
     }
 
     /** Live switch of the mic indicator style (settings put global kioskclock_mic_indicator ...). */

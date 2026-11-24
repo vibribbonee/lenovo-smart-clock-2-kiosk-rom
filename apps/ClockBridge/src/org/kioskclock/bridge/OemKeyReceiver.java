@@ -187,6 +187,9 @@ public class OemKeyReceiver extends BroadcastReceiver {
     // ---- mic switch -------------------------------------------------------------------------
 
     private void onMicSwitch(Intent intent) {
+        // The broadcast has no state; OemBridge reports the real position. Only fall back to a
+        // stateless "changed" event when the OEM service isn't available.
+        if (svc.micMuted != null) return;
         Bundle b = intent.getExtras();
         StringBuilder raw = new StringBuilder();
         Boolean muted = null;

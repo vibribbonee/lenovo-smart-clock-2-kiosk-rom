@@ -55,6 +55,44 @@ final class Provisioner {
         Log.i(App.TAG, "provisioning v" + version + " finished, failures=" + failures);
     }
 
+    /**
+     * "grants" in provision.json: special access (app-ops) and runtime permissions for named apps.
+     * Runs at every start, not once: it's idempotent, and an app installed or reset later gets them too.
+     * Needs MANAGE_APP_OPS_MODES / GRANT_RUNTIME_PERMISSIONS, which Android gives ClockBridge as the
+     * package verifier (see VerifierReceiver); without them each grant is logged and skipped.
+     */
+    static void applyGrants(Context c) {
+        JSONObject cfg = load();
+        JSONObject grants = cfg == null ? null : cfg.optJSONObject("grants");
+        if (grants == null) return;
+        PackageManager pm = c.getPackageManager();
+        for (Iterator<String> it = grants.keys(); it.hasNext(); ) {
+            String pkg = it.next();
+            if (pkg.startsWith("_")) continue;
+            JSONObject g = grants.optJSONObject(pkg);
+            int uid;
+            try { uid = pm.getApplicationInfo(pkg, 0).uid; } catch (PackageManager.NameNotFoundException e) { continue; }
+            JSONArray ops = g.optJSONArray("appops");
+            for (int i = 0; ops != null && i < ops.length(); i++) {
+                String op = ops.optString(i);
+                step("appop " + op + " " + pkg, () -> {
+                    android.app.AppOpsManager aom = c.getSystemService(android.app.AppOpsManager.class);
+                    aom.getClass().getMethod("setMode", String.class, int.class, String.class, int.class)
+                            .invoke(aom, op, uid, pkg, android.app.AppOpsManager.MODE_ALLOWED);
+                });
+            }
+            JSONArray perms = g.optJSONArray("permissions");
+            for (int i = 0; perms != null && i < perms.length(); i++) {
+                String perm = perms.optString(i);
+                if (pm.checkPermission(perm, pkg) == PackageManager.PERMISSION_GRANTED) continue;
+                step("grant " + perm + " " + pkg, () ->
+                        pm.getClass().getMethod("grantRuntimePermission", String.class, String.class, android.os.UserHandle.class)
+                                .invoke(pm, pkg, perm, android.os.Process.myUserHandle()));
+            }
+            Log.i(App.TAG, "grants applied for " + pkg);
+        }
+    }
+
     private interface Step { void run() throws Exception; }
 
     private static int step(String name, Step s) {

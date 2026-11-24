@@ -10,8 +10,8 @@
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.kioskclock.bridge"
-    android:versionCode="8"
-    android:versionName="0.8.0">
+    android:versionCode="9"
+    android:versionName="0.8.1">
 
     <uses-sdk android:minSdkVersion="29" android:targetSdkVersion="29" />
 
@@ -29,6 +29,11 @@
     <uses-permission android:name="android.permission.SET_TIME_ZONE" />
     <!-- Privileged: "Restart" in the KioskNav quick panel. -->
     <uses-permission android:name="android.permission.REBOOT" />
+    <!-- Privileged: lets ClockBridge be the package verifier (VerifierReceiver). -->
+    <uses-permission android:name="android.permission.PACKAGE_VERIFICATION_AGENT" />
+    <!-- Granted to the package verifier (not privileged, so no allowlist entry): Kiosk's special access. -->
+    <uses-permission android:name="android.permission.MANAGE_APP_OPS_MODES" />
+    <uses-permission android:name="android.permission.GRANT_RUNTIME_PERMISSIONS" />
     <!-- Granted to preinstalled apps: system settings (24 h clock, brightness). -->
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
 
@@ -67,6 +72,16 @@
             android:permission="org.kioskclock.permission.CONTROL">
             <intent-filter>
                 <action android:name="org.kioskclock.bridge.CONTROL" />
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name=".VerifierReceiver"
+            android:exported="true"
+            android:directBootAware="true"
+            android:permission="android.permission.BIND_PACKAGE_VERIFIER">
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_NEEDS_VERIFICATION" />
+                <data android:mimeType="application/vnd.android.package-archive" />
             </intent-filter>
         </receiver>
 

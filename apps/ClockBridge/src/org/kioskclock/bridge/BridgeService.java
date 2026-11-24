@@ -33,6 +33,9 @@ public class BridgeService extends Service {
     private Thread updaterThread;
     final Webhook webhook = new Webhook(this);
     private OemKeyReceiver oemKeys;
+    private OemBridge oem;
+    /** Mic switch position from the OEM service; null until it has reported. */
+    volatile Boolean micMuted;
     private volatile boolean running;
 
     static BridgeService get() { return instance; }
@@ -85,12 +88,15 @@ public class BridgeService extends Service {
         }
 
         Provisioner.runOnce(this);
+        Provisioner.applyGrants(this);
 
         org.json.JSONObject buttons = Provisioner.config() == null ? null : Provisioner.config().optJSONObject("buttons");
         oemKeys = new OemKeyReceiver(this,
                 buttons == null ? "voice" : buttons.optString("hold_volume_up", "voice"),
                 buttons == null ? "dock_light" : buttons.optString("hold_volume_down", "dock_light"));
         registerReceiver(oemKeys, oemKeys.filter());
+        oem = new OemBridge(this, this::onMicState);
+        oem.start();
 
         poller = new Thread(this::pollDock, "dock-poller");
         poller.start();
@@ -103,6 +109,20 @@ public class BridgeService extends Service {
         token();
         http = new HttpApi(this, HTTP_PORT);
         http.start();
+    }
+
+    /**
+     * Mic switch position (from OemBridge, on a binder thread). Published as Settings.Global
+     * kioskclock_mic_muted (1/0, read by KioskNav and the HTTP API), an org.kioskclock.bridge.MIC
+     * broadcast and, on changes, a webhook event.
+     */
+    void onMicState(boolean muted) {
+        Boolean prev = micMuted;
+        micMuted = muted;
+        android.provider.Settings.Global.putString(getContentResolver(), "kioskclock_mic_muted", muted ? "1" : "0");
+        sendBroadcast(new Intent(OemKeyReceiver.ACTION_MIC).putExtra("muted", muted));
+        Log.i(App.TAG, "mic switch " + (muted ? "muted" : "on") + (prev == null ? " (initial)" : ""));
+        if (prev != null && prev != muted) webhook.send("mic", muted ? "muted" : "unmuted");
     }
 
     /** Runs one update check off the caller's thread. */
@@ -162,6 +182,7 @@ public class BridgeService extends Service {
     public void onDestroy() {
         running = false;
         if (oemKeys != null) unregisterReceiver(oemKeys);
+        if (oem != null) oem.stop();
         if (anchor != null) anchor.stop();
         if (http != null) http.shutdown();
         if (poller != null) poller.interrupt();
