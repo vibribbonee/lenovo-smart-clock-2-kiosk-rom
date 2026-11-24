@@ -229,7 +229,14 @@ public class NavService extends AccessibilityService {
     }
 
     @Override
-    public void onAccessibilityEvent(AccessibilityEvent event) { }
+    public void onAccessibilityEvent(AccessibilityEvent event) {
+        // Kiosk Satellite opening a window (voice UI after the wake word, alarm, notification
+        // overlay) lifts the manual black screen, so voice works while it's black.
+        if (blackout != null && blackout.isOn() && event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
+                && "me.jxl.kiosk_satellite".contentEquals(String.valueOf(event.getPackageName()))) {
+            wake();
+        }
+    }
 
     @Override
     public void onInterrupt() { }

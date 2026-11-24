@@ -1,6 +1,6 @@
 {
   "_comment": "Applied once per fresh /data (first boot, factory reset) by ClockBridge. Bump 'version' to re-apply after an update. Every step is idempotent and logged.",
-  "version": 2,
+  "version": 3,
   "enable_components": [
     "me.jxl.kiosk_satellite/me.jxl.kiosk_satellite.HomeAlias"
   ],
@@ -27,10 +27,12 @@
     "lockscreen.disabled": "1"
   },
   "system_settings": {
-    "time_12_24": "24"
+    "time_12_24": "24",
+    "screen_off_timeout": "2147483647"
   },
   "global_settings": {
-    "auto_time": "1"
+    "auto_time": "1",
+    "stay_on_while_plugged_in": "7"
   },
   "time_zone": "Europe/Amsterdam"
 }
