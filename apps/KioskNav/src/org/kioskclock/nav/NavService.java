@@ -234,6 +234,10 @@ public class NavService extends AccessibilityService {
         home.setOnClickListener(v -> { hideBar(); performGlobalAction(GLOBAL_ACTION_HOME); });
         bar.addView(back);
         bar.addView(home);
+        // Empty third slot keeps Home centred and the spacing of the original three-button bar.
+        View spacer = new View(this);
+        spacer.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1f));
+        bar.addView(spacer);
         bar.setOnTouchListener((v, e) -> {
             if (e.getActionMasked() == MotionEvent.ACTION_OUTSIDE) { hideBar(); return true; }
             return false;
