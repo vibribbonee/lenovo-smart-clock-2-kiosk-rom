@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  KioskNav: the stock firmware has no SystemUI, so there is no navigation bar or gesture handling.
+  This accessibility service draws a thin strip along the bottom edge; swiping up from it shows a
+  Back / Home / Settings bar. Runs independently of Kiosk Satellite so it works when the kiosk crashes.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.kioskclock.nav"
+    android:versionCode="1"
+    android:versionName="0.1.0">
+
+    <uses-sdk android:minSdkVersion="29" android:targetSdkVersion="29" />
+
+    <application
+        android:label="@string/app_name"
+        android:allowBackup="false">
+
+        <service android:name=".NavService"
+            android:label="@string/app_name"
+            android:exported="true"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data android:name="android.accessibilityservice"
+                android:resource="@xml/nav_service" />
+        </service>
+    </application>
+</manifest>

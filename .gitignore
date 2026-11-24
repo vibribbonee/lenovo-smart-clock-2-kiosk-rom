@@ -14,3 +14,5 @@ firmware/work/
 .DS_Store
 upstream/
 firmware/extracted/
+keys/
+out/

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ClockBridge: system helper for the Lenovo Smart Clock 2 kiosk ROM.
+  - Mic anchor: holds the microphone at 48 kHz stereo so the MT8167 audio HAL stream is created
+    in its clean native format before any voice app opens it (see docs/PERFORMANCE_BASELINE.md).
+  - Dock: night light + phone charging state via Lenovo's charge_base service (whitelisted calls only).
+  - Small token-protected HTTP API for Home Assistant.
+  - One-time first-boot provisioning (enables KioskNav) when WRITE_SECURE_SETTINGS is held.
+  In the ROM it lives in /product/priv-app and is persistent, so Android starts it before the HOME app.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.kioskclock.bridge"
+    android:versionCode="1"
+    android:versionName="0.1.0">
+
+    <uses-sdk android:minSdkVersion="29" android:targetSdkVersion="29" />
+
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
+
+    <application
+        android:name=".App"
+        android:label="@string/app_name"
+        android:persistent="true"
+        android:directBootAware="true"
+        android:allowBackup="false"
+        android:usesCleartextTraffic="true">
+
+        <service android:name=".BridgeService"
+            android:exported="false"
+            android:directBootAware="true" />
+
+        <receiver android:name=".BootReceiver"
+            android:exported="true"
+            android:directBootAware="true">
+            <intent-filter>
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name=".CommandReceiver"
+            android:exported="true"
+            android:permission="android.permission.WRITE_SECURE_SETTINGS">
+            <intent-filter>
+                <action android:name="org.kioskclock.bridge.COMMAND" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>

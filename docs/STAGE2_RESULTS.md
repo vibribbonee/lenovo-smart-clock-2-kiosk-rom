@@ -18,10 +18,23 @@
 |---|---|
 | `com.google.android.apps.mediashell` disabled | `adb shell pm enable com.google.android.apps.mediashell` |
 | `com.google.assistant.display.android.updater` disabled | `adb shell pm enable com.google.assistant.display.android.updater` |
-| MicAnchor (`com.micanchor`) installed, mic permission granted | `adb uninstall com.micanchor` |
+| ~~MicAnchor~~ (installed for testing, **removed** 2026-11-24, replaced by ClockBridge) | — |
+| ClockBridge (`org.kioskclock.bridge`) installed; RECORD_AUDIO and WRITE_SECURE_SETTINGS granted | `adb uninstall org.kioskclock.bridge` |
+| KioskNav (`org.kioskclock.nav`) installed and enabled as accessibility service | `adb uninstall org.kioskclock.nav` |
 | ADB listening on TCP 5555 | reboot (or `adb usb`) |
 
-After any reboot, voice needs: `adb shell 'am force-stop me.jxl.kiosk_satellite; am force-stop com.micanchor; sleep 1; am start-foreground-service -n com.micanchor/.MicAnchorService'`.
+After any reboot on stock, voice needs: `adb shell 'am force-stop me.jxl.kiosk_satellite; am force-stop org.kioskclock.bridge; am broadcast -n org.kioskclock.bridge/.BootReceiver'`.
+
+## Own apps tested on stock (2026-11-24)
+Built with `scripts/build/build_apps.sh` (no Gradle; signed with the project key in `keys/`, which must be backed up).
+| App | Result |
+|---|---|
+| **KioskNav** 0.1.0 | ✅ Edge strip active; swipe up shows the bar; **Back, Home and long-press Settings all work** (user-confirmed). Works without SystemUI. |
+| **ClockBridge** 0.1.0 — mic anchor | ✅ Holds 48 kHz x2; Kiosk Satellite reports 99 % of 16000 Hz. Replaces MicAnchor. |
+| ClockBridge — first-boot provisioning | ✅ Enabled KioskNav's accessibility service by itself (with WRITE_SECURE_SETTINGS granted via adb; in the ROM via privapp-permissions). |
+| ClockBridge — HTTP API (port 8765, bearer token) | ✅ Responds; rejects requests without token. |
+| ClockBridge — dock via `charge_base` | ❌ on stock as a normal app: SELinux denies `untrusted_app` → `charge_base_service:service_manager find`. The firmware policy allows `priv_app` and `platform_app` (`system_api_service` attribute), so it **must be a priv-app in /product/priv-app** — already the ROM plan. |
+| ClockBridge as boot anchor on stock | Not reboot-safe on stock (normal app starts after BOOT_COMPLETED, after Kiosk Satellite). In the ROM it is `persistent` and starts before HOME. |
 
 ## Not yet tested
 Lenovo MDM agent disable (OTA code inside), Bluetooth audio with Cast off, factory reset behaviour (deliberately not tested on stock — Lenovo update server is dead), WebView 156 as provider (needs the ROM overlay).
