@@ -258,6 +258,14 @@
           "alarm_stop": "Stop",
           "none": "Nothing"
         }
+      },
+      "media_controls": {
+        "name": "Media controls",
+        "state": {
+          "auto": "Automatic (mini player)",
+          "manual": "Only with ♫",
+          "off": "Off"
+        }
       }
     },
     "sensor": {

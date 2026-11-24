@@ -73,8 +73,8 @@
     },
     {
       "src": "out/apps/KioskNav.apk",
-      "dst": "/app/KioskNav/KioskNav.apk",
-      "why": "Swipe-up Back/Home/Settings bar (no SystemUI on this firmware)."
+      "dst": "/priv-app/KioskNav/KioskNav.apk",
+      "why": "Swipe-up Back/Home/♫ bar, quick panel, settings, tour, media controls (no SystemUI on this firmware). Privileged for MEDIA_CONTENT_CONTROL."
     },
     {
       "src": "out/apps/ClockCore.apk",

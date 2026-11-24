@@ -105,7 +105,8 @@ final class QuickPanel {
         // Tiles: tap = main action, long-press = the matching settings page (as on stock Android).
         LinearLayout r4 = row();
         wifi = tile(v -> openSettings(Settings.ACTION_WIFI_SETTINGS), Settings.ACTION_WIFI_SETTINGS);
-        bt = tile(v -> toggleBluetooth(), Settings.ACTION_BLUETOOTH_SETTINGS);
+        // Tap: make the clock visible to phones (Bluetooth speaker); hold: Bluetooth settings (also to turn it off).
+        bt = tile(v -> pairMode(), Settings.ACTION_BLUETOOTH_SETTINGS);
         night = tile(v -> {
             control(new Intent(CONTROL).putExtra("cmd", "night").putExtra("on", !isNight()));
             handler.postDelayed(this::refresh, 400);
@@ -189,9 +190,10 @@ final class QuickPanel {
             btOn = st == BluetoothAdapter.STATE_ON;
             boolean connected = btOn && (a.getProfileConnectionState(android.bluetooth.BluetoothProfile.A2DP) == BluetoothAdapter.STATE_CONNECTED
                     || a.getProfileConnectionState(android.bluetooth.BluetoothProfile.HEADSET) == BluetoothAdapter.STATE_CONNECTED);
+            boolean visible = btOn && a.getScanMode() == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE;
             btState = st == BluetoothAdapter.STATE_TURNING_ON ? "Turning on\u2026"
                     : st == BluetoothAdapter.STATE_TURNING_OFF ? "Turning off\u2026"
-                    : connected ? "Connected" : btOn ? "On" : "Off";
+                    : connected ? "Connected" : visible ? "Visible to phones" : btOn ? "Tap to pair" : "Off";
         }
         setTile(bt, "\u16D2", "Bluetooth", btState, btOn);
         boolean nightOn = isNight();
@@ -209,13 +211,51 @@ final class QuickPanel {
         Settings.System.putInt(svc.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS, p + BrightnessActivity.MIN);
     }
 
-    private void toggleBluetooth() {
+    private static final int VISIBLE_S = 120;
+    private int pairTries;
+
+    /** Bluetooth speaker: turn Bluetooth on if needed and become discoverable for 2 minutes. */
+    private void pairMode() {
         BluetoothAdapter a = BluetoothAdapter.getDefaultAdapter();
         if (a == null) return;
-        if (a.isEnabled()) a.disable(); else a.enable();
+        if (!a.isEnabled()) {
+            a.enable();
+            pairTries = 0;
+            handler.postDelayed(this::pairWhenOn, 500);
+        } else {
+            makeVisible(a);
+        }
         handler.postDelayed(this::refresh, 300);
-        handler.postDelayed(this::refresh, 2500);
     }
+
+    private void pairWhenOn() {
+        BluetoothAdapter a = BluetoothAdapter.getDefaultAdapter();
+        if (a == null) return;
+        if (a.getState() == BluetoothAdapter.STATE_ON) { makeVisible(a); return; }
+        if (++pairTries < 20) handler.postDelayed(this::pairWhenOn, 500);
+    }
+
+    private void makeVisible(BluetoothAdapter a) {
+        boolean ok;
+        try {   // privileged (BLUETOOTH_PRIVILEGED): no "make visible?" dialog
+            ok = (Boolean) a.getClass().getMethod("setScanMode", int.class, int.class)
+                    .invoke(a, BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE, VISIBLE_S);
+        } catch (Exception e) {
+            ok = false;
+        }
+        if (!ok) {   // fall back to Android's own confirmation dialog
+            hide();
+            svc.startActivity(new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE)
+                    .putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, VISIBLE_S).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            return;
+        }
+        if (snackbar == null) snackbar = new Snackbar(svc);
+        snackbar.show("Ready to pair: \"" + a.getName() + "\" (2 min)");
+        handler.postDelayed(this::refresh, 300);
+        handler.postDelayed(this::refresh, VISIBLE_S * 1000L + 500);
+    }
+
+    private Snackbar snackbar;
 
     private void control(Intent i) {
         svc.sendBroadcast(i.setPackage(BRIDGE), "org.kioskclock.permission.CONTROL");

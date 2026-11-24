@@ -53,6 +53,7 @@ final class Provisioner {
         failures += step("system settings", () -> putAll(c, cfg.optJSONObject("system_settings"), 'y'));
         failures += step("global settings", () -> putAll(c, cfg.optJSONObject("global_settings"), 'g'));
         failures += step("time zone", () -> timeZone(c, cfg.optString("time_zone", null)));
+        failures += step("bluetooth name", () -> bluetoothName(cfg.optString("bluetooth_name", null)));
         if (failures == 0) prefs(c).edit().putInt("done_version", version).apply();
         Log.i(App.TAG, "provisioning v" + version + " finished, failures=" + failures);
     }
@@ -199,6 +200,18 @@ final class Provisioner {
                     : Settings.Global.putString(c.getContentResolver(), k, v);
             Log.i(App.TAG, "setting " + table + ":" + k + "=" + v + (ok ? "" : " (refused)"));
         }
+    }
+
+    /** Only replaces the factory name (LenovoCD-…), never one the user chose. Needs Bluetooth on: retried next boot otherwise. */
+    private static void bluetoothName(String name) throws Exception {
+        if (name == null || name.isEmpty()) return;
+        android.bluetooth.BluetoothAdapter a = android.bluetooth.BluetoothAdapter.getDefaultAdapter();
+        if (a == null) return;
+        String cur = a.getName();
+        if (cur != null && !cur.startsWith("LenovoCD")) return;
+        if (!a.isEnabled()) throw new IllegalStateException("Bluetooth off; will retry");
+        if (!a.setName(name)) throw new IllegalStateException("setName refused");
+        Log.i(App.TAG, "bluetooth name set to " + name);
     }
 
     private static void timeZone(Context c, String tz) {

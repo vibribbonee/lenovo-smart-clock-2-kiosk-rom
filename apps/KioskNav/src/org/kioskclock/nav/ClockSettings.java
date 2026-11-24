@@ -31,6 +31,7 @@ final class ClockSettings {
             {"#66FFFFFF", "Dim"}};
     private static final String[][] SIZE = {{"10", "Small"}, {null, "Default"}, {"22", "Large"}};
     private static final String[][] ALARM_TAP = {{"alarm_snooze", "Snooze"}, {"alarm_stop", "Stop"}, {"none", "Nothing"}};
+    private static final String[][] MEDIA = {{null, "Automatic"}, {"manual", "Only with ♫"}, {"off", "Off"}};
     private static final String[][] TAP_SPEED = {{"300", "Fast"}, {null, "Normal"}, {"700", "Relaxed"}};
     private static final String[][] WAKE = {{null, "Off"}, {"dock", "Dock light"}, {"ha", "Home Assistant lights"},
             {"both", "Both"}};
@@ -102,6 +103,10 @@ final class ClockSettings {
         chips("kioskclock_alarm_tap_double", ALARM_TAP, "alarm_stop");
         section("Double-tap speed", "How quickly the second tap must follow. Relaxed is easier, but a single tap then waits longer to act.");
         chips("kioskclock_double_tap_ms", TAP_SPEED, null);
+
+        section("Media controls", "While something plays (Bluetooth from your phone, Kiosk's player, …): Automatic shows a small player at the bottom;"
+                + " ♫ in the bottom bar opens the full player.");
+        chips("kioskclock_media_controls", MEDIA, null);
 
         section("Wake-up light", "Fades in before the next Kiosk alarm. The screen has its own sunrise in Kiosk's alarm settings;"
                 + " pick the Home Assistant lights in the Kiosk Clock integration's options.");

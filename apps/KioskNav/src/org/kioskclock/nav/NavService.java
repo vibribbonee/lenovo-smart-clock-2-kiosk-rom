@@ -71,6 +71,8 @@ public class NavService extends AccessibilityService {
         pairPrompt = new PairPrompt(this);
         registerReceiver(pairPrompt, new android.content.IntentFilter(PairPrompt.ACTION),
                 "org.kioskclock.permission.CONTROL", null);
+        media = new MediaUi(this);
+        media.start();
         onboarding = new Onboarding(this);
         // First boot: give Kiosk Satellite a moment to come up, then show the tour once.
         if (!Onboarding.done(this)) handler.postDelayed(onboarding::show, 15_000);
@@ -82,15 +84,23 @@ public class NavService extends AccessibilityService {
     private AlarmButtons alarmButtons;
     private PairPrompt pairPrompt;
     private Onboarding onboarding;
+    private MediaUi media;
+    private TextView mediaButton;
 
     void showTour() { if (onboarding != null) onboarding.show(); }
 
     private Blackout blackout;
     private ScreenReceiver screenReceiver;
 
-    void blackout() { hideBar(); if (panel != null) panel.hide(); blackout.on(); }
+    void blackout() {
+        hideBar();
+        if (panel != null) panel.hide();
+        if (media != null) { media.closeFull(); media.onMedia(null); }
+        blackout.on();
+        if (media != null) media.refresh();
+    }
 
-    void wake() { blackout.off(); }
+    void wake() { blackout.off(); if (media != null) media.refresh(); }
 
     boolean isBlack() { return blackout != null && blackout.isOn(); }
 
@@ -251,10 +261,11 @@ public class NavService extends AccessibilityService {
         home.setOnClickListener(v -> { hideBar(); performGlobalAction(GLOBAL_ACTION_HOME); });
         bar.addView(back);
         bar.addView(home);
-        // Empty third slot keeps Home centred and the spacing of the original three-button bar.
-        View spacer = new View(this);
-        spacer.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1f));
-        bar.addView(spacer);
+        // Third slot: ♫ (media controls) while something plays; otherwise empty, keeping Home centred.
+        mediaButton = button("♫", "Now playing");
+        mediaButton.setOnClickListener(v -> { hideBar(); if (media != null) media.openFull(); });
+        mediaButton.setVisibility(View.INVISIBLE);
+        bar.addView(mediaButton);
         bar.setOnTouchListener((v, e) -> {
             if (e.getActionMasked() == MotionEvent.ACTION_OUTSIDE) { hideBar(); return true; }
             return false;
@@ -262,6 +273,7 @@ public class NavService extends AccessibilityService {
     }
 
     private void showBar() {
+        if (mediaButton != null) mediaButton.setVisibility(media != null && media.available() ? View.VISIBLE : View.INVISIBLE);
         if (barShown) { restartTimer(); return; }
         wm.addView(bar, params(BAR_PX, true));
         barShown = true;
@@ -303,6 +315,7 @@ public class NavService extends AccessibilityService {
         if (alarmButtons != null) unregisterReceiver(alarmButtons);
         if (pairPrompt != null) { unregisterReceiver(pairPrompt); pairPrompt.hide(); }
         if (onboarding != null) onboarding.hide();
+        if (media != null) media.stop();
         if (blackout != null) blackout.off();
         if (panel != null) panel.hide();
         if (topStrip != null) wm.removeView(topStrip);

@@ -6,8 +6,8 @@
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.kioskclock.nav"
-    android:versionCode="23"
-    android:versionName="1.0.0">
+    android:versionCode="24"
+    android:versionName="1.1.0">
 
     <uses-sdk android:minSdkVersion="29" android:targetSdkVersion="29" />
 
@@ -20,10 +20,16 @@
     <uses-permission android:name="org.kioskclock.permission.CONTROL" />
     <!-- Clock settings screen (Settings.Global keys). Development permission: ClockBridge grants it at boot. -->
     <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
+    <!-- Media controls: read and control every app's media session (privileged; Android Go has no
+         notification listeners, the usual route). KioskNav lives in /product/priv-app for this. -->
+    <uses-permission android:name="android.permission.MEDIA_CONTENT_CONTROL" />
+    <!-- Bluetooth speaker tile: become discoverable without the confirmation dialog (privileged). -->
+    <uses-permission android:name="android.permission.BLUETOOTH_PRIVILEGED" />
 
     <application
         android:label="@string/app_name"
         android:allowBackup="false">
+
 
         <service android:name=".NavService"
             android:label="@string/app_name"

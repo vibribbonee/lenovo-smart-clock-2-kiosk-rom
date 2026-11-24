@@ -10,14 +10,17 @@
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.kioskclock.bridge"
-    android:versionCode="14"
-    android:versionName="1.0.0">
+    android:versionCode="15"
+    android:versionName="1.1.0">
 
     <uses-sdk android:minSdkVersion="29" android:targetSdkVersion="29" />
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- First-boot Bluetooth name (provision.json "bluetooth_name"). -->
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />

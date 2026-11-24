@@ -16,6 +16,7 @@ from .const import (
     DEFAULT_VALUE,
     ALARM_TAP_ACTIONS,
     DOUBLE_TAP_SPEEDS,
+    MEDIA_CONTROLS,
     GESTURE_ACTIONS,
     MIC_COLORS,
     MIC_INDICATORS,
@@ -28,6 +29,7 @@ from .const import (
     SETTING_ALARM_TAP_DOUBLE,
     SETTING_ALARM_TAP_SINGLE,
     SETTING_DOUBLE_TAP_MS,
+    SETTING_MEDIA_CONTROLS,
     SETTING_TAP_DOUBLE,
     SETTING_TAP_SINGLE,
     SETTING_WAKE_LIGHT,
@@ -75,6 +77,9 @@ SELECTS = (
     ClockSelectDescription(
         key="alarm_tap_double", setting=SETTING_ALARM_TAP_DOUBLE, values=_identity(ALARM_TAP_ACTIONS),
         default_option="alarm_stop",
+    ),
+    ClockSelectDescription(
+        key="media_controls", setting=SETTING_MEDIA_CONTROLS, values=dict(MEDIA_CONTROLS), default_option="auto"
     ),
     ClockSelectDescription(
         key="wake_light", setting=SETTING_WAKE_LIGHT, values=dict(WAKE_LIGHT_MODES), default_option="off"

@@ -1,6 +1,6 @@
 {
   "_comment": "Applied once per fresh /data (first boot, factory reset) by ClockBridge. Bump 'version' to re-apply after an update. Every step is idempotent and logged.",
-  "version": 5,
+  "version": 6,
   "enable_components": [
     "me.jxl.kiosk_satellite/me.jxl.kiosk_satellite.HomeAlias"
   ],
@@ -51,6 +51,7 @@
     "com.android.bluetoothmidiservice",
     "com.android.companiondevicemanager"
   ],
+  "bluetooth_name": "Smart Clock 2",
   "secure_settings": {
     "lockscreen.disabled": "1"
   },
