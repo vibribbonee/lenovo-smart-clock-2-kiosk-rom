@@ -1,47 +1,34 @@
-# TODO (after ROM build 1, 2026-11-24)
+# TODO (updated 2026-11-24, build 3: ClockBridge 0.9.0 / KioskNav 0.8.3)
 
-## A. Build 2 — out-of-the-box setup (no manual steps after flash or factory reset)
-- [ ] Kiosk Satellite is the home app on first boot: ClockBridge enables `me.jxl.kiosk_satellite/.HomeAlias` (add `CHANGE_COMPONENT_ENABLED_STATE` to the privapp allowlist).
-- [ ] Simple Keyboard enabled + default on first boot.
-- [ ] Kiosk Satellite's special access granted on first boot, only what it needs: its accessibility services, notification listener (media), draw over apps, modify system settings (brightness), battery-optimisation exemption.
-- [ ] Disable unused stock apps on first boot (Browser, Calendar, Contacts, Music, CarBTDemo, MeshTestProvisioner, TalkBack, YGPS, EngineerMode?, MTPDemo…); remove them from the image after a test round.
-- [ ] Sensible defaults: screen timeout / stay awake, time zone and 24-hour clock, locale, DHCP hostname.
+## Open: verify on the clock
+- [ ] Slam: tap on top snoozes a ringing Kiosk Satellite alarm, double tap stops it; Vol ± change the ringing alarm's volume.
+- [ ] Gestures from the on-clock settings screen and from HA (`/api/gesture`, the *Run … action* buttons).
+- [ ] Home Assistant integration end to end: discovered via mDNS, *Show token*, entities, pushed events, device triggers.
+- [ ] Dock light + phone charging through HA (clock back on the dock).
+- [ ] Voice after a cold boot (mic-switch boot fix is in build 3: seen working on the first boot).
+- [ ] Kiosk Satellite auto-update installs silently (needs a new Kiosk release to happen).
+- [ ] Wi-Fi reconnect, Bluetooth audio, 72 h stability, idle RAM/CPU.
+- [ ] **Factory reset** from Settings and recovery: everything comes back without manual steps. Check the leftover Device Owner (`com.google.assistant.core`, no longer in the image) doesn't get in the way.
 
-## B. Fix what's broken
-- [ ] **Volume:** the scale is 0–100, so step ~6–8 per press; show a small volume bar (KioskNav).
-- [ ] **Brightness and auto-brightness:** find the backlight path (Google apps drove it on stock); light sensor exists (sensor handle 5); manual slider + auto mode.
-- [ ] **Mic mute switch:** verify it's detected on the ROM and that Kiosk Satellite follows it.
-- [x] **Tap to snooze:** taps are reported reliably on the ROM (no Assistant). Tap = snooze, double tap = stop a ringing Kiosk Satellite alarm (KioskNav presses its buttons); configurable like the holds.
+## Open: decisions
+- [ ] **Casting:** gone with the Cast receiver. Kiosk Satellite's media player (Sendspin / Music Assistant) is the realistic replacement.
+- [ ] ADB in the release build: off by default, on, or Wi-Fi with key.
 
-## C. Verify on the ROM (test plan)
-- [ ] Voice works after a reboot (ClockBridge anchor wins the race now that it's persistent).
-- [ ] Dock light + phone charging through ClockBridge (priv-app → SELinux allows it); HA API and webhook from Home Assistant.
-- [ ] Kiosk Satellite auto-update installs silently.
-- [ ] Wi-Fi reconnect, Bluetooth, audio playback, touchscreen, 72 h stability, idle RAM/CPU.
-- [ ] **Factory reset** from Settings and recovery → everything comes back without manual steps.
-
-## D. Decisions / options
-- [ ] **Casting:** gone with the Cast receiver. Options: Kiosk Satellite's own media player for HA (SendSpin), or try re-adding Cast (needs Google Home setup, which depended on Assistant — likely not viable).
-- [ ] ADB in the release build: off by default, on, or Wi-Fi with key; optional this-Mac key in a debug variant.
-- [ ] Lenovo MDM agent (phones home, has OTA code) and the Google OEM app: disable or keep.
-- [ ] Remove the leftover stock apps permanently (after B/C pass).
-
-## F. Findings during build 2 testing
-- **Wake word after a wipe:** Kiosk Satellite's own config (incl. **mic gain**, ~17 dB on the old setup) is wiped with /data. With the default gain "OK Nabu" did not trigger; raising the gain in Kiosk Satellite fixed it. After a factory reset: restore/redo Kiosk Satellite's config. The mic stream itself was correct (48 kHz stereo, ClockBridge first).
-- Log buffer is 64 KiB on Android Go: set `persist.logd.size` to 1 MiB in the ROM for debuggability.
-
-## G. Build 2 results (flashed 2026-11-24 with `update`, data kept)
-- First flash attempt: USB dropped at 4 % of super (only identical vendor/metadata bytes written, clock kept booting build 1); retry succeeded.
-- ✅ First-boot setup applied every item (home = Kiosk HomeAlias, Simple Keyboard default, lock screen off, 24 h, Europe/Amsterdam, timeout never, stay awake, 13 apps disabled, logd 1 MiB).
-- ✅ User-confirmed: home, keyboard, volume buttons, dock light slider.
-- ✅ Auto-brightness works (dark room 0–2 lux → 3/255; lamps ~75 lux → 88; ~174 lux → 138).
-- ⚠️ Known limitation: brightness nudges in Auto mode are recorded (`mLastUserSetScreenBrightness`) but not applied to the curve (`mUserLux=-1`); `screen_auto_brightness_adj` is ignored too. Kiosk Satellite's own brightness control covers this.
-- To do next build: remove the 13 disabled apps from the image (they stay listed as "Disabled" in Settings), taller panel sliders, optional volume click.
-
-## E. Nice to have / housekeeping
-- [ ] Post the mic bug report to Kiosk Satellite (docs/reports/).
-- [ ] Home Assistant config examples (REST sensors, light control, webhook automations) in docs.
+## Open: housekeeping
+- [ ] Post the mic bug report to Kiosk Satellite (`docs/reports/kiosk-satellite-mic-ladder.md`).
 - [ ] Reproducible app builds (fixed zip timestamps).
-- [ ] Commit ROM1_FIRST_BOOT.md; back up `keys/`.
 - [ ] Later: try a GSI/LineageOS via DSU without touching our ROM.
-- [ ] Not possible: shorter/no orange unlock warning (LK is signature-checked by the preloader).
+- Not possible: shorter/no orange unlock warning (LK is signature-checked by the preloader).
+
+## Known limitations
+- Brightness nudges in Auto mode are recorded but not applied to the curve (`mUserLux=-1`); Kiosk Satellite's own brightness control covers this.
+- Alarm volume: Kiosk Satellite sets the alarm stream to its own *Alarm volume* setting at every ring; change it there (Vol ± during a ring works for that ring).
+- Kiosk Satellite already exposes screen, media volume, brightness and alarms to HA (its ESPHome device); the Kiosk Clock integration only adds what ClockBridge knows (dock, mic switch, gestures).
+
+## Done
+- **Out of the box (build 2):** Kiosk Satellite home app, Simple Keyboard, lock screen off, 24 h, time zone, timeout never, stay awake, logd 1 MiB, Kiosk's special access granted on boot.
+- **Fixed:** volume steps + bar + click, auto-brightness, mic switch (state from Lenovo's OEM service, boot retry), tap detection (reliable without Assistant).
+- **Build 3:** Kiosk Clock HA integration (HACS, mDNS discovery, token on the clock), configurable gestures (hold Vol±, tap, double tap) incl. alarm snooze/stop, Vol ± = alarm volume while ringing, HA examples in docs.
+- **Trimmed:** Cast receiver, Assistant, Google/Lenovo updaters, 13 + 21 unused stock apps disabled or removed (provisioning v4; +39 MB RAM). Kept on purpose: `com.google.assistant.oemapp` (mic switch state), phone/telecom (framework), dynsystem (DSU).
+- **Keys:** backed up in the private repo `vibribbonee/lenovo-smart-clock-2-keys` (SjorsMaster has access). One set per builder, not per clock.
+- **Build 2 history:** first flash attempt dropped USB at 4 % (nothing harmful written), retry succeeded. Wake word after a wipe needed Kiosk's mic gain raised (~17 dB).
