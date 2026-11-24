@@ -6,34 +6,59 @@ import android.graphics.PixelFormat;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.Settings;
 import android.view.Gravity;
-import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
 
 /**
- * Hardware mic switch feedback, like the stock firmware / smart displays:
- *  - while muted: a small red pill with a crossed-out mic in the top-right corner,
- *  - when the switch moves: a 2 s banner "Microphone off" / "Microphone on" at the top.
- * Both are non-touchable, so the dashboard underneath keeps working.
+ * Hardware mic switch feedback. Style from Settings.Global "kioskclock_mic_indicator"
+ * (default from provision.json, switchable live, e.g. `settings put global kioskclock_mic_indicator dot`):
+ *   pill (default)  red pill with a crossed-out mic in the top-right corner while muted + 2 s banner on change
+ *   dot             small red dot in the corner while muted + 2 s banner on change
+ *   dot_quiet       small red dot only
+ *   edge            thin red line along the bottom edge while muted (Echo Show light-bar style) + banner
+ *   banner          2 s banner on change only
+ *   hidden          nothing on screen (the panel status line and Home Assistant events remain)
+ * All overlays are non-touchable, so the dashboard underneath keeps working.
  */
 final class MicIndicator {
+    static final String SETTING = "kioskclock_mic_indicator";
     private static final long BANNER_MS = 2000;
+    private static final String MIC_OFF = "🎙️⃠";
+    private static final String MIC_ON = "🎙️";
+
     private final Context ctx;
     private final WindowManager wm;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private TextView pill, banner;
     private final Runnable hideBanner = this::removeBanner;
+    private Boolean lastMuted;
 
     MicIndicator(Context ctx) {
         this.ctx = ctx;
         this.wm = ctx.getSystemService(WindowManager.class);
     }
 
-    void set(boolean muted, boolean announce) {
-        if (muted) showPill(); else removePill();
-        if (announce) showBanner(muted ? "🎙️⃠  Microphone off" : "🎙️  Microphone on", muted);
+    String style() {
+        String s = Settings.Global.getString(ctx.getContentResolver(), SETTING);
+        return s == null || s.isEmpty() ? "pill" : s;
     }
+
+    void set(boolean muted, boolean announce) {
+        lastMuted = muted;
+        String style = style();
+        removePill();
+        if (muted && style.equals("edge")) showEdge();
+        else if (muted && (style.equals("pill") || style.equals("dot") || style.equals("dot_quiet"))) {
+            showPill(style.startsWith("dot"));
+        }
+        boolean banner = style.equals("pill") || style.equals("dot") || style.equals("banner") || style.equals("edge");
+        if (announce && banner) showBanner(muted ? MIC_OFF + "  Microphone off" : MIC_ON + "  Microphone on", muted);
+    }
+
+    /** Re-apply after the style setting changed (no banner). */
+    void restyle() { if (lastMuted != null) set(lastMuted, false); }
 
     private WindowManager.LayoutParams lp(int gravity, int x, int y) {
         WindowManager.LayoutParams p = new WindowManager.LayoutParams(
@@ -61,10 +86,27 @@ final class MicIndicator {
         return t;
     }
 
-    private void showPill() {
+    private void showPill(boolean dot) {
         if (pill != null) return;
-        pill = label("🎙️⃠", 0xE6D93025, 13, 14, 4);
-        wm.addView(pill, lp(Gravity.TOP | Gravity.END, 10, 8));
+        if (dot) {
+            pill = label("", 0xFFD93025, 1, 0, 0);
+            pill.setWidth(14);
+            pill.setHeight(14);
+            wm.addView(pill, lp(Gravity.TOP | Gravity.END, 14, 12));
+        } else {
+            pill = label(MIC_OFF, 0xE6D93025, 13, 14, 4);
+            wm.addView(pill, lp(Gravity.TOP | Gravity.END, 10, 8));
+        }
+    }
+
+    private void showEdge() {
+        if (pill != null) return;
+        pill = new TextView(ctx);
+        pill.setBackgroundColor(0xFFD93025);
+        WindowManager.LayoutParams p = lp(Gravity.BOTTOM, 0, 0);
+        p.width = WindowManager.LayoutParams.MATCH_PARENT;
+        p.height = 5;
+        wm.addView(pill, p);
     }
 
     private void removePill() {

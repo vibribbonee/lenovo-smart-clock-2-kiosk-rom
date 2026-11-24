@@ -53,6 +53,8 @@ public class NavService extends AccessibilityService {
         dockReceiver = new DockReceiver(panel);
         registerReceiver(dockReceiver, new android.content.IntentFilter(DockReceiver.ACTION));
         micIndicator = new MicIndicator(this);
+        getContentResolver().registerContentObserver(
+                android.provider.Settings.Global.getUriFor(MicIndicator.SETTING), false, new StyleObserver(micIndicator));
         micReceiver = new MicReceiver(panel, micIndicator);
         registerReceiver(micReceiver, new android.content.IntentFilter(MicReceiver.ACTION));
         addTopStrip();
@@ -144,6 +146,13 @@ public class NavService extends AccessibilityService {
         strip.setBackgroundColor(Color.TRANSPARENT);
         strip.setOnTouchListener(new StripTouch(+1, this::showBar));
         wm.addView(strip, params(STRIP_PX, false));
+    }
+
+    /** Live switch of the mic indicator style (settings put global kioskclock_mic_indicator ...). */
+    private static final class StyleObserver extends android.database.ContentObserver {
+        private final MicIndicator indicator;
+        StyleObserver(MicIndicator indicator) { super(new Handler(Looper.getMainLooper())); this.indicator = indicator; }
+        @Override public void onChange(boolean selfChange) { indicator.restyle(); }
     }
 
     /**
