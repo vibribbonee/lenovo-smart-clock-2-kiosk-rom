@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  WebView providers, in order of preference. No <signature> elements: on Android 10 such an entry
+  is accepted only for system apps, and both are shipped in the image (Google WebView in
+  /product/app/GoogleWebView, AOSP WebView 74 in /product/app/webview as fallback).
+-->
+<webviewproviders>
+    <webviewprovider description="Google WebView" packageName="com.google.android.webview" availableByDefault="true" />
+    <webviewprovider description="Android WebView" packageName="com.android.webview" availableByDefault="true" />
+</webviewproviders>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ro.control_privapp_permissions=enforce on this firmware: every privileged permission a priv-app
+  requests must be listed here or system_server refuses to boot. Keep in sync with
+  apps/ClockBridge/AndroidManifest.xml.
+-->
+<permissions>
+    <privapp-permissions package="org.kioskclock.bridge">
+        <permission name="android.permission.WRITE_SECURE_SETTINGS" />
+        <permission name="android.permission.INSTALL_PACKAGES" />
+    </privapp-permissions>
+</permissions>

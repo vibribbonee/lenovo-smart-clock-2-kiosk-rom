@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Exempt the kiosk and its helper from battery optimisation / background restrictions. -->
+<config>
+    <allow-in-power-save package="org.kioskclock.bridge" />
+    <allow-in-power-save package="me.jxl.kiosk_satellite" />
+</config>

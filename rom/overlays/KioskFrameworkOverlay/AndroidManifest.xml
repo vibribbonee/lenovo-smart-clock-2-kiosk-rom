@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Static framework overlay (/product/overlay): adds Google WebView as a valid provider. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.kioskclock.overlay.framework"
+    android:versionCode="1"
+    android:versionName="1.0">
+    <uses-sdk android:minSdkVersion="29" android:targetSdkVersion="29" />
+    <overlay android:targetPackage="android" android:isStatic="true" android:priority="10" />
+    <application android:hasCode="false" />
+</manifest>
