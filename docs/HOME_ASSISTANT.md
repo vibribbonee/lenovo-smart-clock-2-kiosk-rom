@@ -33,7 +33,7 @@ Settings (`/api/settings`):
 | `kioskclock_mic_indicator` | `dot`, `dot_quiet`, `google`, `pill`, `edge`, `banner`, `hidden` | `dot` |
 | `kioskclock_mic_color` | `#RRGGBB` or `#AARRGGBB` | `#D93025` |
 | `kioskclock_mic_size` | dot/badge size in px (1–99) | 14 (dot) / 36 (badge) |
-| `kioskclock_hold_volume_up` | `voice`, `dock_light`, `screen_off`, `none` | `voice` |
+| `kioskclock_hold_volume_up` | `voice`, `play_pause`, `mute`, `dock_light`, `night_light`, `screen_off`, `ha_event` (only sends the hold to HA), `none` | `voice` |
 | `kioskclock_hold_volume_down` | same | `dock_light` |
 
 ## configuration.yaml example

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Lenovo Smart Clock 2 kiosk ROM — guided all-in-one script.
 #
-#   ./clockrom.sh doctor                 check tools, fetch avbtool
+#   ./clockrom.sh doctor [--install]     check tools, fetch avbtool; --install installs what's missing
 #   ./clockrom.sh backup                 read-only BROM backup of YOUR clock + verification (do this first)
 #   ./clockrom.sh build [--webview FILE | --webview-from-device | --no-webview]
 #                                        fetch + verify APKs, build the ROM from your backup (offline)
@@ -21,9 +21,36 @@ confirm() {  # confirm "<what will happen>" <word>
   printf '\n%s%s%s\nType %s%s%s to continue, anything else to stop: ' "$B" "$1" "$R" "$B" "$2" "$R"
   read -r a; [ "$a" = "$2" ] || die "Stopped. Nothing was written."
 }
+MTKCLIENT_REF=v2.1.4.1   # what --install installs; the project was tested on a clock with mtkclient 1.6.3
+[ -x "$ROOT/tools/venv/bin/mtk" ] && MTK="${MTK:-$ROOT/tools/venv/bin/mtk}"
 MTK="${MTK:-$(command -v mtk || true)}"
 
+install_tools() {  # asks before every package-manager / pip action
+  step "Installing missing tools"
+  if [ "$(uname)" = Darwin ]; then
+    command -v brew >/dev/null || die "Homebrew is needed: https://brew.sh (then run this again)."
+    confirm "Run: brew install e2fsprogs libusb android-platform-tools python?" install
+    brew install e2fsprogs libusb android-platform-tools python
+  elif command -v apt-get >/dev/null; then
+    confirm "Run: sudo apt-get install e2fsprogs libusb-1.0-0 adb python3 python3-venv python3-pip openssl git?" install
+    sudo apt-get update && sudo apt-get install -y e2fsprogs libusb-1.0-0 adb python3 python3-venv python3-pip openssl git
+  elif command -v dnf >/dev/null; then
+    confirm "Run: sudo dnf install e2fsprogs libusb1 android-tools python3 python3-pip openssl git?" install
+    sudo dnf install -y e2fsprogs libusb1 android-tools python3 python3-pip openssl git
+  else
+    die "Unknown package manager: install e2fsprogs, libusb, adb, python3 and git yourself."
+  fi
+  if [ -z "$MTK" ]; then
+    confirm "Install mtkclient $MTKCLIENT_REF into tools/venv (a private Python environment in this folder)?" install
+    python3 -m venv tools/venv
+    tools/venv/bin/pip install -q "git+https://github.com/bkerler/mtkclient@$MTKCLIENT_REF"
+    MTK="$ROOT/tools/venv/bin/mtk"
+    say "mtkclient installed: $MTK (tested on a clock: 1.6.3; newer versions should behave the same)"
+  fi
+}
+
 doctor() {
+  [ "${1:-}" = "--install" ] && install_tools
   step "Checking tools"
   local miss=()
   command -v python3 >/dev/null || miss+=("python3")
@@ -31,8 +58,9 @@ doctor() {
   command -v shasum  >/dev/null || miss+=("shasum (perl)")
   local dbg; for dbg in /opt/homebrew/opt/e2fsprogs/sbin/debugfs /usr/local/opt/e2fsprogs/sbin/debugfs /sbin/debugfs /usr/sbin/debugfs; do [ -x "$dbg" ] && break; done
   [ -x "$dbg" ] || miss+=("e2fsprogs (debugfs, resize2fs)  →  macOS: brew install e2fsprogs   Debian/Ubuntu: apt install e2fsprogs")
-  [ -n "$MTK" ] || miss+=("mtkclient  →  https://github.com/bkerler/mtkclient (pip install, then 'mtk' on PATH; or set MTK=/path/to/mtk)")
+  [ -n "$MTK" ] || miss+=("mtkclient  →  https://github.com/bkerler/mtkclient ('mtk' on PATH, or set MTK=/path/to/mtk)")
   command -v adb >/dev/null || say "  (optional) adb not found — only needed for --webview-from-device and checking the clock afterwards"
+  case "$(uname -s)" in Darwin|Linux) ;; *) die "Only macOS and Linux are supported (on Windows, mtkclient needs a special USB driver and the clock re-connects during BROM entry, which WSL's USB pass-through handles poorly).";; esac
   if [ ! -f tools/avb/avbtool.py ] || [ "$(shasum -a 256 tools/avb/avbtool.py | cut -d' ' -f1)" != "$AVBTOOL_SHA" ]; then
     say "  fetching avbtool from AOSP …"; mkdir -p tools/avb
     python3 -I -c "import base64,sys,urllib.request;open(sys.argv[2],'wb').write(base64.b64decode(urllib.request.urlopen(sys.argv[1],timeout=60).read()))" \
@@ -41,7 +69,7 @@ doctor() {
     else say "  ${RED}AOSP's avbtool changed since this project was tested (sha256 differs).${R} Using it anyway is likely fine; it's kept as tools/avb/avbtool.py."
          mv tools/avb/avbtool.py.new tools/avb/avbtool.py; fi
   fi
-  if [ ${#miss[@]} -gt 0 ]; then say "Missing:"; printf '  - %s\n' "${miss[@]}"; die "Install the above, then run ./clockrom.sh doctor again."; fi
+  if [ ${#miss[@]} -gt 0 ]; then say "Missing:"; printf '  - %s\n' "${miss[@]}"; die "Run ./clockrom.sh doctor --install (asks before installing), or install the above yourself."; fi
   say "${GRN}All tools present.${R}"
 }
 
@@ -147,7 +175,7 @@ EOF
 }
 
 case "${1:-}" in
-  doctor) doctor ;;
+  doctor) shift; doctor "$@" ;;
   backup) backup ;;
   build) shift; build "$@" ;;
   flash) flash ;;

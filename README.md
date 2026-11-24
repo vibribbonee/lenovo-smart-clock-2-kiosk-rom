@@ -15,7 +15,7 @@ Built from stock firmware **1.2.2.627** and running daily on a real clock (Kiosk
 | **Voice that works** | ClockBridge holds the mic at 48 kHz stereo from early boot, working around a MediaTek MT8167 capture bug ([details](docs/PERFORMANCE_BASELINE.md)) |
 | **Navigation** | swipe up from the bottom edge: Back · Home (the firmware has no SystemUI) |
 | **Quick settings** | swipe down from the top edge: brightness + Auto, volume, dock light, Wi‑Fi, Bluetooth, Night light, screen off (tap to wake), restart, Settings (tap: clock settings, hold: Android Settings) |
-| **Hardware** | volume keys with click; hold Vol+ = voice assistant, hold Vol− = dock light; mic‑switch indicator (several styles); tap‑on‑top and dock events |
+| **Hardware** | volume keys with click; hold Vol+ / Vol− for a shortcut of your choice (voice assistant, play/pause, mute, dock light, night light, screen off, or just an HA event); mic‑switch indicator (several styles); tap‑on‑top and dock events |
 | **Home Assistant** | HTTP API + webhook events for dock light, phone charging, screen, settings — [docs/HOME_ASSISTANT.md](docs/HOME_ASSISTANT.md) |
 | **Out of the box** | first boot after flash/reset sets home app, keyboard, nav bar, disables leftovers, no screen timeout — no Google setup |
 
@@ -35,11 +35,11 @@ vbmeta_system re-signed with your own AVB key (dm-verity stays on); bootloader u
 Why not root/Magisk: modules live in /data and vanish on a factory reset. Why not a GSI/LineageOS: Lenovo's dock service lives in the stock framework. See [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md).
 
 ## Quick start
-You need: a Smart Clock 2 on firmware **1.2.2.627**, a pogo‑pin USB connection ([upstream guide](https://github.com/ThomasPrior/LenovoSmartClock2)), macOS or Linux with Python 3, `e2fsprogs` and [mtkclient](https://github.com/bkerler/mtkclient).
+You need: a Smart Clock 2 on firmware **1.2.2.627**, a pogo‑pin USB connection ([upstream guide](https://github.com/ThomasPrior/LenovoSmartClock2)), and a Mac or Linux PC (tested on macOS; Linux should work but is untested; Windows isn't supported). `./clockrom.sh doctor --install` installs the rest — e2fsprogs, adb, libusb and [mtkclient](https://github.com/bkerler/mtkclient) — asking before each step (mtkclient 1.6.3 was used on a real clock; the installer fetches the current release).
 
 ```bash
 git clone https://github.com/vibribbonee/lenovo-smart-clock-2-kiosk-rom && cd lenovo-smart-clock-2-kiosk-rom
-./clockrom.sh doctor      # checks tools, fetches AOSP avbtool
+./clockrom.sh doctor --install   # checks/installs tools (asks first), fetches AOSP avbtool
 ./clockrom.sh backup      # read-only full backup of your clock (~15 min) + verification
 ./clockrom.sh build --webview ~/Downloads/<webview>.apk    # offline build from your backup
 ./clockrom.sh flash       # restore rehearsal, then first flash (unlock + wipe) or update (keeps data)

@@ -179,6 +179,28 @@ public class OemKeyReceiver extends BroadcastReceiver {
             case "screen_off":
                 svc.sendBroadcast(new Intent("org.kioskclock.nav.SCREEN").setPackage("org.kioskclock.nav").putExtra("on", false));
                 break;
+            case "play_pause": {   // whatever is playing on the clock (Kiosk media player, Music Assistant, …)
+                AudioManager am = audio();
+                am.dispatchMediaKeyEvent(new android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, android.view.KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE));
+                am.dispatchMediaKeyEvent(new android.view.KeyEvent(android.view.KeyEvent.ACTION_UP, android.view.KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE));
+                break;
+            }
+            case "mute": {
+                AudioManager am = audio();
+                am.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_TOGGLE_MUTE, 0);
+                boolean muted = am.isStreamMute(AudioManager.STREAM_MUSIC);
+                svc.sendBroadcast(new Intent(ACTION_VOLUME).putExtra("percent", muted ? 0
+                        : Math.round(am.getStreamVolume(AudioManager.STREAM_MUSIC) * 100f / Math.max(1, am.getStreamMaxVolume(AudioManager.STREAM_MUSIC)))));
+                emit("speaker", muted ? "muted" : "unmuted");
+                break;
+            }
+            case "night_light": {
+                android.content.ContentResolver cr = svc.getContentResolver();
+                int on = android.provider.Settings.Secure.getInt(cr, "night_display_activated", 0);
+                android.provider.Settings.Secure.putInt(cr, "night_display_activated", on == 1 ? 0 : 1);
+                break;
+            }
+            // "ha_event": nothing on the clock; the hold is sent to Home Assistant (button event above) for your automations.
             default:
                 break;
         }

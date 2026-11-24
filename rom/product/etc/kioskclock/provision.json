@@ -48,7 +48,7 @@
     }
   },
   "buttons": {
-    "_options": "voice (start Kiosk Satellite listening), dock_light (toggle), screen_off (black screen), none",
+    "_options": "voice (start Kiosk Satellite listening), play_pause (media), mute (speaker toggle), dock_light (toggle), night_light (toggle), screen_off (black screen), ha_event (only send the hold to Home Assistant), none. Every hold is also sent to HA as a button event.",
     "hold_volume_up": "voice",
     "hold_volume_down": "dock_light"
   }
