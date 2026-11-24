@@ -41,6 +41,18 @@
     {
       "path": "/app/MtkWallpaperPicker",
       "why": "Disabled on first boot since build 2 with no side effects; removed so it no longer appears in Settings."
+    },
+    {
+      "path": "/app/MTPDemo",
+      "why": "Disabled on first boot since build 3 (ROM test: no side effects); removed so it no longer appears in Settings."
+    },
+    {
+      "path": "/priv-app/DuraSpeed",
+      "why": "Disabled on first boot since build 3 (ROM test: no side effects); removed so it no longer appears in Settings."
+    },
+    {
+      "path": "/priv-app/MtkEmergencyInfo",
+      "why": "Disabled on first boot since build 3 (ROM test: no side effects); removed so it no longer appears in Settings."
     }
   ],
   "add": [

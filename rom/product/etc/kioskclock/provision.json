@@ -1,6 +1,6 @@
 {
   "_comment": "Applied once per fresh /data (first boot, factory reset) by ClockBridge. Bump 'version' to re-apply after an update. Every step is idempotent and logged.",
-  "version": 3,
+  "version": 4,
   "enable_components": [
     "me.jxl.kiosk_satellite/me.jxl.kiosk_satellite.HomeAlias"
   ],
@@ -21,7 +21,28 @@
     "com.mediatek.ygps",
     "com.mediatek.autodialer",
     "com.mediatek.callrecorder",
-    "com.google.android.marvin.talkback"
+    "com.google.android.marvin.talkback",
+    "com.lenovo.mdm.admin.agent",
+    "com.tonly.helios.ota",
+    "com.mediatek.engineermode",
+    "com.test.mtptest",
+    "com.mediatek.duraspeed",
+    "com.mediatek.location.lppe.main",
+    "com.mediatek.gnss.nonframeworklbs",
+    "com.android.printspooler",
+    "com.android.bips",
+    "com.android.printservice.recommendation",
+    "com.android.cellbroadcastreceiver",
+    "com.android.simappdialog",
+    "com.android.ons",
+    "com.android.mms.service",
+    "com.android.calllogbackup",
+    "com.android.emergency",
+    "com.android.dreams.basic",
+    "com.android.bookmarkprovider",
+    "com.android.wallpaperbackup",
+    "com.android.traceur",
+    "com.android.providers.calendar"
   ],
   "secure_settings": {
     "lockscreen.disabled": "1"
