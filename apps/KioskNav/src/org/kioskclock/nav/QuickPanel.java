@@ -37,6 +37,7 @@ final class QuickPanel {
     static final String BRIDGE = "org.kioskclock.bridge";
 
     private final NavService svc;
+    private final ClockSettings settings;
     private final WindowManager wm;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable hide = this::hide;
@@ -51,6 +52,7 @@ final class QuickPanel {
 
     QuickPanel(NavService svc) {
         this.svc = svc;
+        this.settings = new ClockSettings(svc);
         this.wm = svc.getSystemService(WindowManager.class);
         root = new LinearLayout(svc);
         root.setOrientation(LinearLayout.VERTICAL);
@@ -111,7 +113,9 @@ final class QuickPanel {
         TextView off = tile(v -> { hide(); svc.blackout(); }, null);
         off.setOnLongClickListener(v -> { hide(); control(new Intent(CONTROL).putExtra("cmd", "reboot")); return true; });
         setTile(off, "\uD83C\uDF19", "Screen off", "Hold: restart", false);
-        for (TextView t : new TextView[]{wifi, bt, night, off}) r4.addView(t, weight());
+        TextView clock = tile(v -> { hide(); settings.show(); }, null);
+        setTile(clock, "\u2699", "Clock", "Settings", false);
+        for (TextView t : new TextView[]{wifi, bt, night, off, clock}) r4.addView(t, weight());
         root.addView(r4);
 
         status = new TextView(svc);

@@ -42,6 +42,9 @@
     "me.jxl.kiosk_satellite": {
       "appops": ["android:request_install_packages", "android:get_usage_stats", "android:write_settings", "android:system_alert_window"],
       "permissions": ["android.permission.READ_LOGS", "android.permission.READ_EXTERNAL_STORAGE", "android.permission.WRITE_EXTERNAL_STORAGE"]
+    },
+    "org.kioskclock.nav": {
+      "permissions": ["android.permission.WRITE_SECURE_SETTINGS"]
     }
   },
   "buttons": {
