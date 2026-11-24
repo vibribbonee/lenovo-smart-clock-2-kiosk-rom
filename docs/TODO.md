@@ -26,6 +26,10 @@
 - [ ] Lenovo MDM agent (phones home, has OTA code) and the Google OEM app: disable or keep.
 - [ ] Remove the leftover stock apps permanently (after B/C pass).
 
+## F. Findings during build 2 testing
+- **Wake word after a wipe:** Kiosk Satellite's own config (incl. **mic gain**, ~17 dB on the old setup) is wiped with /data. With the default gain "OK Nabu" did not trigger; raising the gain in Kiosk Satellite fixed it. After a factory reset: restore/redo Kiosk Satellite's config. The mic stream itself was correct (48 kHz stereo, ClockBridge first).
+- Log buffer is 64 KiB on Android Go: set `persist.logd.size` to 1 MiB in the ROM for debuggability.
+
 ## E. Nice to have / housekeeping
 - [ ] Post the mic bug report to Kiosk Satellite (docs/reports/).
 - [ ] Home Assistant config examples (REST sensors, light control, webhook automations) in docs.

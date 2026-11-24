@@ -123,17 +123,31 @@ public class BridgeService extends Service {
             String key = s.valid + ":" + s.light + ":" + s.charger;
             if (!key.equals(lastKey)) {
                 lastKey = key;
-                Intent i = new Intent(ACTION_DOCK_STATE)
-                        .putExtra("valid", s.valid)
-                        .putExtra("light", s.light)
-                        .putExtra("charger_state", s.charger)
-                        .putExtra("phone_present", s.phonePresent())
-                        .putExtra("phone_charging", s.phoneCharging());
-                sendBroadcast(i);
+                sendBroadcast(dockIntent(s));
                 Log.i(App.TAG, "dock state " + key);
             }
             try { Thread.sleep(s.valid ? 2000 : 10000); } catch (InterruptedException e) { return; }
         }
+    }
+
+    static Intent dockIntent(ChargeBase.Status s) {
+        return new Intent(ACTION_DOCK_STATE)
+                .putExtra("valid", s.valid)
+                .putExtra("light", Math.min(10, s.light))   // the MCU reports 11 for level 10
+                .putExtra("charger_state", s.charger)
+                .putExtra("phone_present", s.phonePresent())
+                .putExtra("phone_charging", s.phoneCharging());
+    }
+
+    /** Fresh dock read + broadcast, for the quick panel (runs on the caller's thread). */
+    void requestDockBroadcast() {
+        if (Thread.currentThread() == getMainLooper().getThread()) {
+            new Thread(this::requestDockBroadcast, "dock-query").start();
+            return;
+        }
+        ChargeBase.Status s = dock.status();
+        lastStatus = s;
+        sendBroadcast(dockIntent(s));
     }
 
     @Override

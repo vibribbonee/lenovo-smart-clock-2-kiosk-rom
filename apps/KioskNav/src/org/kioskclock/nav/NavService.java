@@ -49,7 +49,27 @@ public class NavService extends AccessibilityService {
         buildVolumeBar();
         volumeReceiver = new VolumeReceiver(this);
         registerReceiver(volumeReceiver, new android.content.IntentFilter(VolumeReceiver.ACTION));
+        panel = new QuickPanel(this);
+        dockReceiver = new DockReceiver(panel);
+        registerReceiver(dockReceiver, new android.content.IntentFilter(DockReceiver.ACTION));
+        addTopStrip();
     }
+
+    private QuickPanel panel;
+    private DockReceiver dockReceiver;
+    private View topStrip;
+
+    /** Swipe down from the top edge opens the quick panel. */
+    private void addTopStrip() {
+        topStrip = new View(this);
+        topStrip.setBackgroundColor(Color.TRANSPARENT);
+        topStrip.setOnTouchListener(new StripTouch(-1, this::showPanel));
+        WindowManager.LayoutParams lp = params(STRIP_PX, false);
+        lp.gravity = Gravity.TOP;
+        wm.addView(topStrip, lp);
+    }
+
+    void showPanel() { hideBar(); panel.show(); }
 
     /** Slim bar at the top centre: there is no SystemUI volume dialog on this firmware. */
     private void buildVolumeBar() {
@@ -106,20 +126,22 @@ public class NavService extends AccessibilityService {
     private void addStrip() {
         strip = new View(this);
         strip.setBackgroundColor(Color.TRANSPARENT);
-        strip.setOnTouchListener(new StripTouch(this));
+        strip.setOnTouchListener(new StripTouch(+1, this::showBar));
         wm.addView(strip, params(STRIP_PX, false));
     }
 
     /**
-     * Opens the bar once the finger has moved SWIPE_PX upward from the strip.
+     * Fires once the finger has moved SWIPE_PX away from the edge: direction +1 = upward (bottom
+     * strip), -1 = downward (top strip).
      * Static nested on purpose: d8 34.0.0 crashes on javac 21 output for non-static inner classes.
      */
     private static final class StripTouch implements View.OnTouchListener {
-        private final NavService svc;
+        private final int direction;
+        private final Runnable onSwipe;
         private float downY;
         private boolean fired;
 
-        StripTouch(NavService svc) { this.svc = svc; }
+        StripTouch(int direction, Runnable onSwipe) { this.direction = direction; this.onSwipe = onSwipe; }
 
         @Override
         public boolean onTouch(View v, MotionEvent e) {
@@ -127,9 +149,9 @@ public class NavService extends AccessibilityService {
             if (action == MotionEvent.ACTION_DOWN) {
                 downY = e.getRawY();
                 fired = false;
-            } else if (action == MotionEvent.ACTION_MOVE && !fired && downY - e.getRawY() > SWIPE_PX) {
+            } else if (action == MotionEvent.ACTION_MOVE && !fired && (downY - e.getRawY()) * direction > SWIPE_PX) {
                 fired = true;
-                svc.showBar();
+                onSwipe.run();
             }
             return true;
         }
@@ -206,6 +228,9 @@ public class NavService extends AccessibilityService {
         hideBar();
         hideVolumeBar();
         if (volumeReceiver != null) unregisterReceiver(volumeReceiver);
+        if (dockReceiver != null) unregisterReceiver(dockReceiver);
+        if (panel != null) panel.hide();
+        if (topStrip != null) wm.removeView(topStrip);
         if (strip != null) wm.removeView(strip);
         super.onDestroy();
     }
