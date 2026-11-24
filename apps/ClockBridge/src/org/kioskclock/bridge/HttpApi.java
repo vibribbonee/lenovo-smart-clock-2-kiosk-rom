@@ -18,7 +18,8 @@ import java.util.Map;
  * Tiny HTTP/1.0 API for Home Assistant. Every endpoint needs "Authorization: Bearer <token>".
  *   GET  /api/dock              -> {"dock":true,"light":0,"phone_present":false,"phone_charging":false,"charger_state":1}
  *   POST /api/dock/light?level=N  (N = 0..10)
- *   GET  /api/status            -> mic anchor state and versions
+ *   GET  /api/status            -> mic anchor state, dock firmware, WebView and Kiosk Satellite versions
+ *   POST /api/update/check      -> check GitHub for a newer Kiosk Satellite now
  * One request per connection, small bodies only, 5 s socket timeout.
  */
 final class HttpApi extends Thread {
@@ -89,9 +90,19 @@ final class HttpApi extends Thread {
             svc.lastStatus = s;
             reply(c, ok ? 200 : 503, dockJson(s));
         } else if (method.equals("GET") && path.equals("/api/status")) {
+            android.content.pm.PackageInfo wv = android.webkit.WebView.getCurrentWebViewPackage();
+            KioskUpdater u = svc.updater;
             reply(c, 200, "{\"mic_anchor\":\"" + esc(svc.micState()) + "\",\"dock_service\":" + svc.dock.available()
                     + ",\"dock_mcu\":\"" + esc(String.valueOf(svc.dock.mcuVersion())) + "\",\"dock_wireless\":\""
-                    + esc(String.valueOf(svc.dock.firmwareVersion())) + "\"}");
+                    + esc(String.valueOf(svc.dock.firmwareVersion())) + "\""
+                    + ",\"webview\":\"" + (wv == null ? "none" : esc(wv.packageName + " " + wv.versionName)) + "\""
+                    + ",\"kiosk_version\":\"" + esc(String.valueOf(u.installedVersion())) + "\""
+                    + ",\"webhook_configured\":" + (svc.webhook.url() != null)
+                    + ",\"kiosk_auto_update\":" + u.enabled()
+                    + ",\"kiosk_update_result\":\"" + esc(u.lastResult) + "\",\"kiosk_update_checked\":" + u.lastCheck + "}");
+        } else if (method.equals("POST") && path.equals("/api/update/check")) {
+            svc.checkUpdateAsync();
+            reply(c, 200, "{\"started\":true}");
         } else {
             reply(c, 404, "{\"error\":\"not found\"}");
         }

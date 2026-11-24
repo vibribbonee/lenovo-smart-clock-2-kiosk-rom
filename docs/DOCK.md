@@ -79,3 +79,17 @@ Meaning of `C` values 2 and 9 is inferred from one phone and one session; confir
 - Remembers the user's light level and re‑applies on dock attach.
 
 Keep `oemapp` and `AsseccoryOTA` in the image (possibly disabled later) until Dock Bridge is proven; never delete `heliosbase.default.so`, `user.bin`, `wireless.bin`, or the ChargeBase framework code.
+
+## Hardware events: tap on top, dock attach/remove, volume keys (2026-11-24)
+Lenovo's PhoneWindowManager (system_server, services.jar) maps hardware keys to Lenovo keycodes and broadcasts them (sender uid 1000, unprotected, delivered to runtime-registered receivers):
+| Source | Linux key | Android keycode | Broadcast |
+|---|---|---|---|
+| Accelerometer tap (input device "Accelerometer") | 249 (0xf9) | `KEYCODE_TAP` = 287 | `com.tonly.KEYCODE_TAP` |
+| heliosbase-status | 250 | `KEYCODE_ACCESSORIES_INSERT` = 284 | `com.tonly.ACCESSORIES_INSERT` |
+| heliosbase-status | 251 | `KEYCODE_ACCESSORIES_DROP` = 290 | `com.tonly.ACCESSORIES_DROP` |
+| gpio-keys volume | — | volume keys | `com.tonly.KEYCODE_VOLUME_UP/DOWN` (extra `EXTRA_DOWN` 1/0) |
+On stock the Google OEM app receives them (`onTap fired` → Assistant "Tap event called SINGLE").
+
+ClockBridge 0.3.0 registers for all of them and forwards `tap` (single/double), `dock` (attached/removed), `phone` (none/present/charging, debounced) and `volume` events to a Home Assistant webhook. It handles the volume keys itself only when `com.google.assistant.core` is absent (ROM), to avoid double volume steps on stock.
+
+**Open item: tap detection is intermittent.** At 01:11 six taps produced raw key 0xf9 events and broadcasts. From 01:13 (after reinstalling ClockBridge and restarting Kiosk Satellite) even hard taps produced **no raw 0xf9 events** at all (30 s `getevent` on `/dev/input/event1`), while the accelerometer sensor stayed active (system OrientationEventListener). So the kernel driver stopped reporting taps. Hypotheses to test later: the driver's tap interrupt is armed by the Google OEM app or Assistant (Assistant re-registers an `ITapEventListener` every 10 s); or tap detection depends on a sensor rate/mode set by whoever opened the accelerometer first. Next step: watch `/sys/bus/platform/drivers/*accel*` or vendor sensor HAL logs while toggling Assistant/oemapp, and test on the ROM where Assistant is absent.

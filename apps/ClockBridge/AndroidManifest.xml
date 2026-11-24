@@ -10,8 +10,8 @@
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.kioskclock.bridge"
-    android:versionCode="1"
-    android:versionName="0.1.0">
+    android:versionCode="3"
+    android:versionName="0.3.0">
 
     <uses-sdk android:minSdkVersion="29" android:targetSdkVersion="29" />
 
@@ -22,6 +22,8 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
+    <!-- Privileged: silent Kiosk Satellite updates (granted via privapp-permissions in the ROM). -->
+    <uses-permission android:name="android.permission.INSTALL_PACKAGES" />
 
     <application
         android:name=".App"
@@ -43,6 +45,9 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
+
+        <receiver android:name=".InstallResultReceiver"
+            android:exported="false" />
 
         <receiver android:name=".CommandReceiver"
             android:exported="true"

@@ -29,6 +29,10 @@ public class BridgeService extends Service {
     private MicAnchor anchor;
     private HttpApi http;
     private Thread poller;
+    KioskUpdater updater;
+    private Thread updaterThread;
+    final Webhook webhook = new Webhook(this);
+    private OemKeyReceiver oemKeys;
     private volatile boolean running;
 
     static BridgeService get() { return instance; }
@@ -82,19 +86,40 @@ public class BridgeService extends Service {
 
         Provisioner.runOnce(this);
 
+        oemKeys = new OemKeyReceiver(this);
+        registerReceiver(oemKeys, oemKeys.filter());
+
         poller = new Thread(this::pollDock, "dock-poller");
         poller.start();
+
+        updater = new KioskUpdater(this);
+        updaterThread = new Thread(updater::loop, "kiosk-updater");
+        updaterThread.setPriority(Thread.MIN_PRIORITY);
+        updaterThread.start();
 
         token();
         http = new HttpApi(this, HTTP_PORT);
         http.start();
     }
 
+    /** Runs one update check off the caller's thread. */
+    void checkUpdateAsync() {
+        new Thread(updater::checkNow, "kiosk-update-now").start();
+    }
+
     private void pollDock() {
         String lastKey = "";
+        String phonePrev = null, phoneReported = null;
         while (running) {
             ChargeBase.Status s = dock.status();
             lastStatus = s;
+            // Phone events need the same state on two polls in a row: codes 9 and 0 are ~1 s transients.
+            String phone = !s.valid ? null : s.phoneCharging() ? "charging" : s.phonePresent() ? "present" : "none";
+            if (phone != null && phone.equals(phonePrev) && !phone.equals(phoneReported)) {
+                if (phoneReported != null) webhook.send("phone", phone);
+                phoneReported = phone;
+            }
+            phonePrev = phone;
             String key = s.valid + ":" + s.light + ":" + s.charger;
             if (!key.equals(lastKey)) {
                 lastKey = key;
@@ -119,9 +144,11 @@ public class BridgeService extends Service {
     @Override
     public void onDestroy() {
         running = false;
+        if (oemKeys != null) unregisterReceiver(oemKeys);
         if (anchor != null) anchor.stop();
         if (http != null) http.shutdown();
         if (poller != null) poller.interrupt();
+        if (updaterThread != null) updaterThread.interrupt();
         instance = null;
         super.onDestroy();
     }
