@@ -56,6 +56,9 @@ This repository ships **no Lenovo or Google binaries**: they're copyrighted and 
 ## Home Assistant
 Install the **Kiosk Clock** integration from this repository with HACS (*Custom repositories* → this repo's URL, type *Integration*), restart HA, and the clock appears under *Discovered*. Pair it by tapping **Allow** on the clock (or enter the token from quick panel → **Clock** → **Show token**) and you get the dock light, phone and mic switch sensors, screen buttons, settings and tap/button triggers. Details and the YAML fallback: [docs/HOME_ASSISTANT.md](docs/HOME_ASSISTANT.md).
 
+## Updates
+The ROM's own apps update themselves over Wi-Fi from this repository's GitHub releases (ClockBridge checks every 12 h; `kioskclock_app_updates=0` turns it off), like Kiosk Satellite. Only image changes need a USB flash. The one persistent app, **ClockCore**, holds the microphone from the start of boot and nothing else, so it rarely changes.
+
 ## Documentation
 | Doc | Content |
 |---|---|

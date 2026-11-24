@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ClockCore: the one part that has to be persistent. It holds the microphone at 48 kHz stereo from
+  the moment Android starts (before the HOME app), so the MT8167 audio HAL stream is created in its
+  clean native format before any voice app opens it (docs/PERFORMANCE_BASELINE.md). Nothing else
+  lives here, so it practically never changes: everything else is in ClockBridge, which updates
+  over the network. Settings.Global kioskclock_mic_anchor=0 switches the anchor off (e.g. once
+  Kiosk Satellite records at 48 kHz itself); the state is published in kioskclock_mic_anchor_state.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.kioskclock.core"
+    android:versionCode="1"
+    android:versionName="1.0">
+
+    <uses-sdk android:minSdkVersion="29" android:targetSdkVersion="29" />
+
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
+
+    <application
+        android:name=".Core"
+        android:label="@string/app_name"
+        android:persistent="true"
+        android:directBootAware="true"
+        android:allowBackup="false">
+    </application>
+</manifest>

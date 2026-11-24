@@ -20,7 +20,7 @@ else
   python3 -I scripts/build/fetch_inputs.py ownapps
 fi
 python3 -I scripts/build/fetch_inputs.py check
-[ -x "$HOME/Library/Android/sdk/build-tools/34.0.0/aapt2" ] && python3 -I scripts/build/check_privapp.py out/apps/ClockBridge.apk org.kioskclock.bridge rom/product/etc/permissions/privapp-permissions-kioskclock.xml || true
+[ -x "$HOME/Library/Android/sdk/build-tools/34.0.0/aapt2" ] && { python3 -I scripts/build/check_privapp.py out/apps/ClockBridge.apk org.kioskclock.bridge rom/product/etc/permissions/privapp-permissions-kioskclock.xml && python3 -I scripts/build/check_privapp.py out/apps/ClockCore.apk org.kioskclock.core rom/product/etc/permissions/privapp-permissions-kioskclock.xml; } || true
 rm -f firmware/work/product.img firmware/work/super.img
 python3 -I scripts/build/build_product.py
 scripts/build/build_vbmeta.sh

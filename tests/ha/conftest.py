@@ -36,6 +36,7 @@ SETTINGS = {
     "kioskclock_hold_volume_up": None, "kioskclock_hold_volume_down": "ha_event",
     "kioskclock_tap_single": None, "kioskclock_tap_double": "screen_toggle",
     "kioskclock_double_tap_ms": "700",
+    "kioskclock_alarm_tap_single": None, "kioskclock_alarm_tap_double": "none",
     "kioskclock_wake_light": "both", "kioskclock_wake_minutes": None, "kioskclock_wake_max": "4",
 }
 

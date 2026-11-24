@@ -19,7 +19,7 @@ import java.util.Map;
  *   GET  /api/dock              -> {"dock":true,"light":0,"phone_present":false,"phone_charging":false,"charger_state":1}
  *   POST /api/dock/light?level=N  (N = 0..10)
  *   GET  /api/status            -> mic anchor state, dock firmware, WebView and Kiosk Satellite versions
- *   POST /api/update/check      -> check GitHub for a newer Kiosk Satellite now
+ *   POST /api/update/check      -> check GitHub for a newer Kiosk Satellite and newer own apps now
  *   POST /api/screen/off|on     -> KioskNav black screen (backlight 0) / wake
  *   GET  /api/settings          -> the kioskclock_* settings below
  *   POST /api/settings?key=K&value=V  -> change one (whitelisted keys, validated values; applies live;
@@ -42,7 +42,11 @@ final class HttpApi extends Thread {
         SETTINGS.put("kioskclock_mic_color", java.util.regex.Pattern.compile("#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})"));
         SETTINGS.put("kioskclock_mic_size", java.util.regex.Pattern.compile("[0-9]{1,2}"));
         for (String key : OemKeyReceiver.GESTURES.values()) SETTINGS.put(key, java.util.regex.Pattern.compile(OemKeyReceiver.ACTIONS));
+        SETTINGS.put(OemKeyReceiver.ALARM_TAP_SINGLE, java.util.regex.Pattern.compile(OemKeyReceiver.ALARM_ACTIONS));
+        SETTINGS.put(OemKeyReceiver.ALARM_TAP_DOUBLE, java.util.regex.Pattern.compile(OemKeyReceiver.ALARM_ACTIONS));
         SETTINGS.put(OemKeyReceiver.SETTING_DOUBLE_TAP, java.util.regex.Pattern.compile("[3-8][0-9]{2}|900"));
+        SETTINGS.put(OwnUpdater.SETTING, java.util.regex.Pattern.compile("0|1"));
+        SETTINGS.put("kioskclock_mic_anchor", java.util.regex.Pattern.compile("0|1"));
         SETTINGS.put(WakeLight.MODE, java.util.regex.Pattern.compile("off|dock|ha|both"));
         SETTINGS.put(WakeLight.MINUTES, java.util.regex.Pattern.compile("[5-9]|[1-5][0-9]|60"));
         SETTINGS.put(WakeLight.MAX, java.util.regex.Pattern.compile("[1-9]|10"));
@@ -138,6 +142,8 @@ final class HttpApi extends Thread {
                     + ",\"webhook_configured\":" + (svc.webhook.url() != null)
                     + ",\"kiosk_auto_update\":" + u.enabled()
                     + ",\"kiosk_update_result\":\"" + esc(u.lastResult) + "\",\"kiosk_update_checked\":" + u.lastCheck
+                    + ",\"bridge_version\":\"" + esc(bridgeVersion(svc)) + "\""
+                    + ",\"apps_update_result\":\"" + esc(svc.ownUpdater == null ? "" : svc.ownUpdater.lastResult) + "\""
                     + ",\"next_alarm\":" + (svc.wakeLight == null ? 0 : svc.wakeLight.nextAlarm())
                     + ",\"wake_light_active\":" + (svc.wakeLight != null && svc.wakeLight.active()) + "}");
         } else if (method.equals("POST") && (path.equals("/api/screen/on") || path.equals("/api/screen/off"))) {

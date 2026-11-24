@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Runtime permissions granted on first boot (system apps only). Not "fixed": the user can still revoke them. -->
 <exceptions>
-    <exception package="org.kioskclock.bridge">
+    <exception package="org.kioskclock.core">
         <permission name="android.permission.RECORD_AUDIO" fixed="false" />
     </exception>
     <exception package="me.jxl.kiosk_satellite">

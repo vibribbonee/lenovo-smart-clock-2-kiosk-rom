@@ -144,9 +144,12 @@ def _entry_for_webhook(hass: HomeAssistant, webhook_id: str) -> KioskClockConfig
 
 
 def trigger_for(event_type: str, value: str) -> str:
-    """Device-trigger name for a clock event: tap single -> tap_single, button hold_up:voice -> hold_up."""
+    """Device-trigger name for a clock event: tap single -> tap_single, button hold_up:voice -> hold_up.
+    Taps while an alarm rings arrive as single:ringing and fire the same tap_single trigger."""
     if event_type == "button":
         return value.partition(":")[0]
+    if event_type == "tap":
+        return f"tap_{value.partition(':')[0]}"
     return f"{event_type}_{value}"
 
 
@@ -169,6 +172,7 @@ async def _handle_webhook(hass: HomeAssistant, webhook_id: str, request: web.Req
             "type": event_type,
             "value": value,
             "trigger": trigger_for(event_type, value),
+            "ringing": event_type == "tap" and value.endswith(":ringing"),
         },
     )
     async_dispatcher_send(hass, SIGNAL_EVENT.format(entry.entry_id), event_type, value)

@@ -38,8 +38,10 @@ Four gestures, each set to one action (on the clock: quick panel → **Clock**; 
 |---|---|
 | Hold Vol + | `voice` |
 | Hold Vol − | `dock_light` |
-| Tap on top (a firm "slam") | `alarm_snooze` |
-| Double tap on top | `alarm_stop` |
+| Tap on top (a firm "slam") | `none` |
+| Double tap on top | `none` |
+| Tap while an alarm or timer rings | `alarm_snooze` (a timer can't snooze: it stops) |
+| Double tap while ringing | `alarm_stop` |
 
 Actions: `alarm_snooze` / `alarm_stop` (a ringing Kiosk Satellite alarm, like Lenovo's hard tap; nothing otherwise), `voice`, `play_pause`, `mute` (speaker), `dock_light`, `night_light`, `screen_off`, `screen_toggle`, `ha_event` (only send it to HA), `none`.
 Snooze/stop works offline: KioskNav presses the alarm screen's own Snooze / Stop button. While an alarm rings, Vol ± change the alarm's volume instead of media.
@@ -97,7 +99,10 @@ Settings (`/api/settings`):
 | `kioskclock_hold_volume_up` | `alarm_snooze`, `alarm_stop`, `voice`, `play_pause`, `mute`, `dock_light`, `night_light`, `screen_off`, `screen_toggle`, `ha_event` (only sends it to HA), `none` | `voice` |
 | `kioskclock_hold_volume_down` | same | `dock_light` |
 | `kioskclock_tap_single` | same (0.9.0+) | `alarm_snooze` |
-| `kioskclock_tap_double` | same (0.9.0+) | `alarm_stop` |
+| `kioskclock_tap_double` | same (0.9.0+) | `none` |
+| `kioskclock_alarm_tap_single` / `_double` | `alarm_snooze`, `alarm_stop`, `none`: taps while an alarm or timer rings (1.0.0+) | `alarm_snooze` / `alarm_stop` |
+| `kioskclock_app_updates` | `1` / `0`: install newer KioskNav / ClockBridge from this repo's GitHub releases (1.0.0+) | `1` |
+| `kioskclock_mic_anchor` | `1` / `0`: ClockCore's mic anchor (turn off once Kiosk Satellite records at 48 kHz itself) | `1` |
 | `kioskclock_wake_light` | `off`, `dock`, `ha`, `both` (0.9.2+) | `off` |
 | `kioskclock_wake_minutes` | 5–60 (0.9.2+) | 20 |
 | `kioskclock_wake_max` | dock light limit 1–10 (0.9.2+) | 10 |
@@ -155,7 +160,7 @@ light:
 
 ## Webhook automations (fallback)
 Events arrive as JSON `{"type": "...", "value": "...", "device": "smart-clock-2", "ts": ...}`:
-`tap` (`single`/`double`), `wake_light` (`start:SECONDS` / `cancel`), `alarm_volume` (0–100, Vol ± while an alarm rings), `dock` (`attached`/`removed`), `phone` (`none`/`present`/`charging`), `mic` (`muted`/`unmuted`), `button` (`hold_up:voice`, …), `volume` (0–100).
+`tap` (`single`/`double`, `single:ringing` while an alarm rings; HA's tap event gets `ringing: true`), `wake_light` (`start:SECONDS` / `cancel`), `alarm_volume` (0–100, Vol ± while an alarm rings), `dock` (`attached`/`removed`), `phone` (`none`/`present`/`charging`), `mic` (`muted`/`unmuted`), `button` (`hold_up:voice`, …), `volume` (0–100).
 
 ```yaml
 automation:

@@ -51,7 +51,9 @@ async def test_setup_and_entities(hass: HomeAssistant, mock_clock: AiohttpClient
     assert hass.states.get("select.smart_clock_2_ab12_mute_indicator_size").state == "default"
     assert hass.states.get("select.smart_clock_2_ab12_hold_volume_up").state == "voice"  # unset = default
     assert hass.states.get("select.smart_clock_2_ab12_hold_volume_down").state == "ha_event"
-    assert hass.states.get("select.smart_clock_2_ab12_tap_on_top").state == "alarm_snooze"  # unset = default
+    assert hass.states.get("select.smart_clock_2_ab12_tap_on_top").state == "none"  # unset = default
+    assert hass.states.get("select.smart_clock_2_ab12_tap_while_ringing").state == "alarm_snooze"
+    assert hass.states.get("select.smart_clock_2_ab12_double_tap_while_ringing").state == "none"
     assert hass.states.get("select.smart_clock_2_ab12_double_tap_on_top").state == "screen_toggle"
     assert hass.states.get("select.smart_clock_2_ab12_double_tap_speed").state == "relaxed"
     assert hass.states.get("sensor.smart_clock_2_ab12_kiosk_satellite_version").state == "2026.11.29"
@@ -115,14 +117,17 @@ async def test_webhook_events(hass: HomeAssistant, mock_clock, config_entry, has
     assert resp.status == 200
     resp = await client.post(url, json={"type": "button", "value": "hold_up:voice"})
     assert resp.status == 200
+    resp = await client.post(url, json={"type": "tap", "value": "single:ringing"})
+    assert resp.status == 200
     await hass.async_block_till_done()
 
     device = _device(hass)
     assert [(e.data["trigger"], e.data["device_id"]) for e in events] == [
-        ("tap_double", device.id), ("hold_up", device.id),
+        ("tap_double", device.id), ("hold_up", device.id), ("tap_single", device.id),
     ]
+    assert events[-1].data["ringing"] is True
     tap = hass.states.get("event.smart_clock_2_ab12_tap")
-    assert tap.attributes["event_type"] == "double"
+    assert tap.attributes["event_type"] == "single" and tap.attributes["ringing"] is True
     button = hass.states.get("event.smart_clock_2_ab12_button_hold")
     assert button.attributes["event_type"] == "hold_up"
     assert button.attributes["action"] == "voice"

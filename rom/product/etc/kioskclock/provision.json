@@ -71,6 +71,11 @@
       "appops": ["android:request_install_packages", "android:get_usage_stats", "android:write_settings", "android:system_alert_window"],
       "permissions": ["android.permission.READ_LOGS", "android.permission.READ_EXTERNAL_STORAGE", "android.permission.WRITE_EXTERNAL_STORAGE"]
     },
+    "org.kioskclock.core": {
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
     "org.kioskclock.nav": {
       "permissions": ["android.permission.WRITE_SECURE_SETTINGS"]
     }
@@ -79,7 +84,8 @@
     "_options": "alarm_snooze / alarm_stop (a ringing Kiosk Satellite alarm, like Lenovo's hard tap), voice (start Kiosk Satellite listening), play_pause (media), mute (speaker toggle), dock_light (toggle), night_light (toggle), screen_off (black screen), screen_toggle (black screen / wake), ha_event (only send it to Home Assistant), none. Every gesture is also sent to HA as an event.",
     "hold_volume_up": "voice",
     "hold_volume_down": "dock_light",
-    "tap_single": "alarm_snooze",
-    "tap_double": "alarm_stop"
+    "tap_single": "none",
+    "tap_double": "none",
+    "_alarm_taps": "While an alarm or timer rings, taps use kioskclock_alarm_tap_single / _double instead (default alarm_snooze / alarm_stop; a timer can't snooze, so snooze stops it)."
   }
 }

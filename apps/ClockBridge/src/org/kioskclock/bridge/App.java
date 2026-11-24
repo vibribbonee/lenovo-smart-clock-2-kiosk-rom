@@ -4,7 +4,7 @@ import android.app.Application;
 import android.content.Intent;
 import android.util.Log;
 
-/** Starts the bridge as early as possible. As a persistent system app this runs before HOME starts. */
+/** Starts the bridge whenever the process starts (boot, after an update, or any broadcast). */
 public class App extends Application {
     static final String TAG = "ClockBridge";
 

@@ -78,11 +78,11 @@ final class KioskUpdater {
         }
     }
 
-    private static void sleep(long ms) {
+    static void sleep(long ms) {
         try { Thread.sleep(ms); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
     }
 
-    private boolean online() {
+    boolean online() {
         ConnectivityManager cm = ctx.getSystemService(ConnectivityManager.class);
         NetworkCapabilities nc = cm.getNetworkCapabilities(cm.getActiveNetwork());
         return nc != null && nc.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED);
@@ -147,10 +147,13 @@ final class KioskUpdater {
         return null;
     }
 
-    private void install(File apk) throws Exception {
+    private void install(File apk) throws Exception { install(ctx, apk, PKG); }
+
+    /** Silent install through PackageInstaller (INSTALL_PACKAGES); the result goes to InstallResultReceiver. */
+    static void install(Context ctx, File apk, String pkg) throws Exception {
         PackageInstaller pi = ctx.getPackageManager().getPackageInstaller();
         PackageInstaller.SessionParams p = new PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL);
-        p.setAppPackageName(PKG);
+        p.setAppPackageName(pkg);
         p.setSize(apk.length());
         int id = pi.createSession(p);
         try (PackageInstaller.Session s = pi.openSession(id)) {
@@ -159,13 +162,13 @@ final class KioskUpdater {
                 for (int n; (n = in.read(buf)) > 0; ) out.write(buf, 0, n);
                 s.fsync(out);
             }
-            Intent i = new Intent(ctx, InstallResultReceiver.class).setAction(ACTION_RESULT);
+            Intent i = new Intent(ctx, InstallResultReceiver.class).setAction(ACTION_RESULT).putExtra("pkg", pkg);
             PendingIntent pend = PendingIntent.getBroadcast(ctx, id, i, PendingIntent.FLAG_UPDATE_CURRENT);
             s.commit(pend.getIntentSender());
         }
     }
 
-    private static byte[] get(String url) throws Exception {
+    static byte[] get(String url) throws Exception {
         HttpURLConnection c = open(url);
         try (InputStream in = new BufferedInputStream(c.getInputStream())) {
             ByteArrayOutputStream bo = new ByteArrayOutputStream();
@@ -178,7 +181,7 @@ final class KioskUpdater {
         } finally { c.disconnect(); }
     }
 
-    private static void download(String url, File dst) throws Exception {
+    static void download(String url, File dst) throws Exception {
         HttpURLConnection c = open(url);
         try (InputStream in = new BufferedInputStream(c.getInputStream()); OutputStream out = new FileOutputStream(dst)) {
             byte[] buf = new byte[1 << 16];
@@ -203,7 +206,7 @@ final class KioskUpdater {
         return c;
     }
 
-    private static String sha256(byte[] b) throws Exception {
+    static String sha256(byte[] b) throws Exception {
         StringBuilder sb = new StringBuilder();
         for (byte x : MessageDigest.getInstance("SHA-256").digest(b)) sb.append(String.format("%02x", x & 0xff));
         return sb.toString();

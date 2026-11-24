@@ -1,21 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   ClockBridge: system helper for the Lenovo Smart Clock 2 kiosk ROM.
-  - Mic anchor: holds the microphone at 48 kHz stereo so the MT8167 audio HAL stream is created
-    in its clean native format before any voice app opens it (see docs/PERFORMANCE_BASELINE.md).
+  - (The mic anchor lives in ClockCore, the only persistent app; ClockBridge updates over the network.)
   - Dock: night light + phone charging state via Lenovo's charge_base service (whitelisted calls only).
   - Small token-protected HTTP API for Home Assistant, advertised via mDNS as _kioskclock._tcp.
   - One-time first-boot provisioning (enables KioskNav) when WRITE_SECURE_SETTINGS is held.
-  In the ROM it lives in /product/priv-app and is persistent, so Android starts it before the HOME app.
+  In the ROM it lives in /product/priv-app (privileged, NOT persistent): it starts at boot and after
+  its own updates, and newer releases install over it from GitHub (OwnUpdater).
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.kioskclock.bridge"
-    android:versionCode="13"
-    android:versionName="0.9.3">
+    android:versionCode="14"
+    android:versionName="1.0.0">
 
     <uses-sdk android:minSdkVersion="29" android:targetSdkVersion="29" />
 
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -45,7 +44,6 @@
     <application
         android:name=".App"
         android:label="@string/app_name"
-        android:persistent="true"
         android:directBootAware="true"
         android:allowBackup="false"
         android:usesCleartextTraffic="true"
@@ -61,6 +59,7 @@
             <intent-filter>
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
 

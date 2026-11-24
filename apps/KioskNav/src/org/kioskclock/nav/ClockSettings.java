@@ -30,6 +30,7 @@ final class ClockSettings {
     private static final String[][] COLOR = {{"#D93025", "Red"}, {"#F29900", "Amber"}, {"#FFFFFF", "White"},
             {"#66FFFFFF", "Dim"}};
     private static final String[][] SIZE = {{"10", "Small"}, {null, "Default"}, {"22", "Large"}};
+    private static final String[][] ALARM_TAP = {{"alarm_snooze", "Snooze"}, {"alarm_stop", "Stop"}, {"none", "Nothing"}};
     private static final String[][] TAP_SPEED = {{"300", "Fast"}, {null, "Normal"}, {"700", "Relaxed"}};
     private static final String[][] WAKE = {{null, "Off"}, {"dock", "Dock light"}, {"ha", "Home Assistant lights"},
             {"both", "Both"}};
@@ -92,9 +93,13 @@ final class ClockSettings {
         section("Hold volume −", null);
         chips("kioskclock_hold_volume_down", HOLD, "dock_light");
         section("Tap on top", "A firm tap on the top of the clock");
-        chips("kioskclock_tap_single", HOLD, "alarm_snooze");
+        chips("kioskclock_tap_single", HOLD, "none");
         section("Double tap on top", null);
-        chips("kioskclock_tap_double", HOLD, "alarm_stop");
+        chips("kioskclock_tap_double", HOLD, "none");
+        section("Tap while an alarm or timer rings", "A timer can't snooze: Snooze stops it");
+        chips("kioskclock_alarm_tap_single", ALARM_TAP, "alarm_snooze");
+        section("Double tap while ringing", null);
+        chips("kioskclock_alarm_tap_double", ALARM_TAP, "alarm_stop");
         section("Double-tap speed", "How quickly the second tap must follow. Relaxed is easier, but a single tap then waits longer to act.");
         chips("kioskclock_double_tap_ms", TAP_SPEED, null);
 

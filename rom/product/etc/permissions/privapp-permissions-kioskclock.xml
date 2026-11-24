@@ -2,7 +2,7 @@
 <!--
   ro.control_privapp_permissions=enforce on this firmware: every privileged permission a priv-app
   requests must be listed here or system_server refuses to boot. Keep in sync with
-  apps/ClockBridge/AndroidManifest.xml.
+  apps/ClockBridge/AndroidManifest.xml and apps/ClockCore/AndroidManifest.xml.
 -->
 <permissions>
     <privapp-permissions package="org.kioskclock.bridge">
@@ -12,5 +12,8 @@
         <permission name="android.permission.SET_TIME_ZONE" />
         <permission name="android.permission.REBOOT" />
         <permission name="android.permission.PACKAGE_VERIFICATION_AGENT" />
+    </privapp-permissions>
+    <privapp-permissions package="org.kioskclock.core">
+        <permission name="android.permission.WRITE_SECURE_SETTINGS" />
     </privapp-permissions>
 </permissions>

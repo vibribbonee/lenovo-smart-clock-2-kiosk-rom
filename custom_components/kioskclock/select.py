@@ -14,6 +14,7 @@ from . import KioskClockConfigEntry
 from .api import KioskClockError
 from .const import (
     DEFAULT_VALUE,
+    ALARM_TAP_ACTIONS,
     DOUBLE_TAP_SPEEDS,
     GESTURE_ACTIONS,
     MIC_COLORS,
@@ -24,6 +25,8 @@ from .const import (
     SETTING_MIC_COLOR,
     SETTING_MIC_INDICATOR,
     SETTING_MIC_SIZE,
+    SETTING_ALARM_TAP_DOUBLE,
+    SETTING_ALARM_TAP_SINGLE,
     SETTING_DOUBLE_TAP_MS,
     SETTING_TAP_DOUBLE,
     SETTING_TAP_SINGLE,
@@ -60,10 +63,18 @@ SELECTS = (
         key="hold_volume_down", setting=SETTING_HOLD_DOWN, values=_identity(GESTURE_ACTIONS), default_option="dock_light"
     ),
     ClockSelectDescription(
-        key="tap_single", setting=SETTING_TAP_SINGLE, values=_identity(GESTURE_ACTIONS), default_option="alarm_snooze"
+        key="tap_single", setting=SETTING_TAP_SINGLE, values=_identity(GESTURE_ACTIONS), default_option="none"
     ),
     ClockSelectDescription(
-        key="tap_double", setting=SETTING_TAP_DOUBLE, values=_identity(GESTURE_ACTIONS), default_option="alarm_stop"
+        key="tap_double", setting=SETTING_TAP_DOUBLE, values=_identity(GESTURE_ACTIONS), default_option="none"
+    ),
+    ClockSelectDescription(
+        key="alarm_tap_single", setting=SETTING_ALARM_TAP_SINGLE, values=_identity(ALARM_TAP_ACTIONS),
+        default_option="alarm_snooze",
+    ),
+    ClockSelectDescription(
+        key="alarm_tap_double", setting=SETTING_ALARM_TAP_DOUBLE, values=_identity(ALARM_TAP_ACTIONS),
+        default_option="alarm_stop",
     ),
     ClockSelectDescription(
         key="wake_light", setting=SETTING_WAKE_LIGHT, values=dict(WAKE_LIGHT_MODES), default_option="off"

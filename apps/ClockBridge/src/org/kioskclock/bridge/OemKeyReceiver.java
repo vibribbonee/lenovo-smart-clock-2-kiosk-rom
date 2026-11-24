@@ -65,6 +65,9 @@ public class OemKeyReceiver extends BroadcastReceiver {
         GESTURES.put("tap_single", "kioskclock_tap_single");
         GESTURES.put("tap_double", "kioskclock_tap_double");
     }
+    /** Taps while an alarm or timer is ringing have their own setting (default snooze / stop). */
+    static final String ALARM_TAP_SINGLE = "kioskclock_alarm_tap_single", ALARM_TAP_DOUBLE = "kioskclock_alarm_tap_double";
+    static final String ALARM_ACTIONS = "alarm_snooze|alarm_stop|none";
 
     private final Runnable singleTap = () -> onTap("single");
     private long lastTap;
@@ -162,8 +165,11 @@ public class OemKeyReceiver extends BroadcastReceiver {
     private long lastAlarmTap;
 
     private void onTap(String kind) {
-        String action = actionFor("tap_" + kind);
-        emit("tap", kind);
+        boolean ringing = alarmPlaying();
+        String action = ringing
+                ? live(kind.equals("single") ? ALARM_TAP_SINGLE : ALARM_TAP_DOUBLE, kind.equals("single") ? "alarm_snooze" : "alarm_stop")
+                : actionFor("tap_" + kind);
+        emit("tap", ringing ? kind + ":ringing" : kind);
         if (action != null && action.startsWith("alarm_")) {
             long now = SystemClock.uptimeMillis();
             if (now - lastAlarmTap < ALARM_GUARD_MS) { Log.i(App.TAG, "tap " + kind + ": ignored (just handled the alarm)"); return; }

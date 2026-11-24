@@ -19,7 +19,9 @@ import java.util.Iterator;
 
 /**
  * First-boot setup after a fresh /data (first boot or factory reset), driven by
- * /product/etc/kioskclock/provision.json (rom/product/etc/kioskclock/provision.json in the repo).
+ * provision.json (rom/product/etc/kioskclock/provision.json in the repo). Two copies: the ROM's in
+ * /product/etc/kioskclock and one built into this APK (res/raw), so a ClockBridge update from GitHub
+ * brings new defaults without a flash. The copy with the higher "version" wins.
  * Runs once per config "version"; each step is idempotent, independent and logged, so one failing
  * step never blocks the others. Only enables/sets things; never touches user data.
  * Needs WRITE_SECURE_SETTINGS, CHANGE_COMPONENT_ENABLED_STATE, SET_TIME_ZONE (privapp allowlist).
@@ -35,7 +37,7 @@ final class Provisioner {
 
     static void runOnce(Context c) {
         JSONObject cfg = load();
-        if (cfg == null) { Log.i(App.TAG, "provisioning: no " + CONFIG); return; }
+        if (cfg == null) { Log.i(App.TAG, "provisioning: no config"); return; }
         int version = cfg.optInt("version", 1);
         if (prefs(c).getInt("done_version", 0) >= version) return;
         if (c.checkSelfPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS) != PackageManager.PERMISSION_GRANTED) {
@@ -101,20 +103,35 @@ final class Provisioner {
     }
 
     /** The parsed provision.json (also used for the button shortcuts), or null. */
+    /** Set once by the service, so the bundled copy can be read from the APK's resources. */
+    private static volatile Context appCtx;
+
+    static void init(Context c) { appCtx = c.getApplicationContext(); }
+
     static JSONObject config() { return load(); }
 
     private static JSONObject load() {
+        JSONObject rom = null, bundled = null;
         File f = new File(CONFIG);
-        if (!f.isFile()) return null;
-        try (InputStream in = new FileInputStream(f)) {
-            byte[] b = new byte[(int) f.length()];
-            int n = 0;
-            while (n < b.length) { int r = in.read(b, n, b.length - n); if (r < 0) break; n += r; }
-            return new JSONObject(new String(b, 0, n, StandardCharsets.UTF_8));
-        } catch (Exception e) {
-            Log.w(App.TAG, "provisioning config unreadable: " + e);
-            return null;
+        if (f.isFile()) {
+            try (InputStream in = new FileInputStream(f)) { rom = parse(in); }
+            catch (Exception e) { Log.w(App.TAG, "ROM provisioning config unreadable: " + e); }
         }
+        Context c = appCtx;
+        if (c != null) {
+            try (InputStream in = c.getResources().openRawResource(R.raw.provision)) { bundled = parse(in); }
+            catch (Exception e) { Log.w(App.TAG, "bundled provisioning config unreadable: " + e); }
+        }
+        if (rom == null) return bundled;
+        if (bundled == null) return rom;
+        return bundled.optInt("version", 1) > rom.optInt("version", 1) ? bundled : rom;
+    }
+
+    private static JSONObject parse(InputStream in) throws Exception {
+        java.io.ByteArrayOutputStream bo = new java.io.ByteArrayOutputStream();
+        byte[] buf = new byte[8192];
+        for (int r; (r = in.read(buf)) > 0; ) bo.write(buf, 0, r);
+        return new JSONObject(new String(bo.toByteArray(), StandardCharsets.UTF_8));
     }
 
     private static void enableComponents(Context c, JSONArray list) throws Exception {

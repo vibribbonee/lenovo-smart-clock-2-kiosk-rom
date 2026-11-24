@@ -242,6 +242,22 @@
           "ha": "Home Assistant lights",
           "both": "Both"
         }
+      },
+      "alarm_tap_single": {
+        "name": "Tap while ringing",
+        "state": {
+          "alarm_snooze": "Snooze (timer: stop)",
+          "alarm_stop": "Stop",
+          "none": "Nothing"
+        }
+      },
+      "alarm_tap_double": {
+        "name": "Double tap while ringing",
+        "state": {
+          "alarm_snooze": "Snooze (timer: stop)",
+          "alarm_stop": "Stop",
+          "none": "Nothing"
+        }
       }
     },
     "sensor": {

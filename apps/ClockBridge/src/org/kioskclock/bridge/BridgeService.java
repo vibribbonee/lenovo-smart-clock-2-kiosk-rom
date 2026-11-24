@@ -14,7 +14,8 @@ import android.util.Log;
 import java.security.SecureRandom;
 
 /**
- * Foreground service hosting the mic anchor, the dock poller and the HTTP API.
+ * Foreground service hosting the dock poller, the HTTP API, events and the updaters.
+ * (The mic anchor runs in ClockCore, the persistent app; its state is in kioskclock_mic_anchor_state.)
  * Broadcasts org.kioskclock.bridge.DOCK_STATE (extras: light, phone_present, phone_charging,
  * charger_state) whenever the dock state changes, for Kiosk Satellite or other local consumers.
  */
@@ -26,7 +27,6 @@ public class BridgeService extends Service {
 
     final ChargeBase dock = new ChargeBase();
     volatile ChargeBase.Status lastStatus = new ChargeBase.Status();
-    private MicAnchor anchor;
     private HttpApi http;
     private Discovery discovery;
     WakeLight wakeLight;
@@ -35,6 +35,8 @@ public class BridgeService extends Service {
     private Thread poller;
     KioskUpdater updater;
     private Thread updaterThread;
+    OwnUpdater ownUpdater;
+    private Thread ownUpdaterThread;
     final Webhook webhook = new Webhook(this);
     OemKeyReceiver oemKeys;
     private OemBridge oem;
@@ -68,7 +70,10 @@ public class BridgeService extends Service {
 
     void setToken(String t) { prefs().edit().putString("token", t).apply(); }
 
-    String micState() { return anchor == null ? "disabled (no RECORD_AUDIO)" : anchor.state; }
+    String micState() {
+        String s = android.provider.Settings.Global.getString(getContentResolver(), "kioskclock_mic_anchor_state");
+        return s == null ? "unknown (ClockCore not running)" : s;
+    }
 
     @Override
     public void onCreate() {
@@ -78,22 +83,14 @@ public class BridgeService extends Service {
         nm.createNotificationChannel(new NotificationChannel("bridge", "Clock Bridge", NotificationManager.IMPORTANCE_MIN));
         Notification n = new Notification.Builder(this, "bridge")
                 .setContentTitle("Clock Bridge")
-                .setContentText("Microphone anchor and dock bridge")
+                .setContentText("Dock, Home Assistant and updates")
                 .setSmallIcon(android.R.drawable.presence_audio_online)
                 .setOngoing(true)
                 .build();
         startForeground(1, n);
         running = true;
 
-        if (checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
-            anchor = new MicAnchor();
-            Thread t = new Thread(anchor, "mic-anchor");
-            t.setPriority(Thread.MAX_PRIORITY);
-            t.start();
-        } else {
-            Log.w(App.TAG, "RECORD_AUDIO not granted; mic anchor disabled");
-        }
-
+        Provisioner.init(this);
         Provisioner.runOnce(this);
         Provisioner.applyGrants(this);
 
@@ -101,8 +98,8 @@ public class BridgeService extends Service {
         oemKeys = new OemKeyReceiver(this,
                 buttons == null ? "voice" : buttons.optString("hold_volume_up", "voice"),
                 buttons == null ? "dock_light" : buttons.optString("hold_volume_down", "dock_light"),
-                buttons == null ? "alarm_snooze" : buttons.optString("tap_single", "alarm_snooze"),
-                buttons == null ? "alarm_stop" : buttons.optString("tap_double", "alarm_stop"));
+                buttons == null ? "none" : buttons.optString("tap_single", "none"),
+                buttons == null ? "none" : buttons.optString("tap_double", "none"));
         registerReceiver(oemKeys, oemKeys.filter());
         oem = new OemBridge(this, this::onMicState);
         oem.start();
@@ -114,6 +111,10 @@ public class BridgeService extends Service {
         updaterThread = new Thread(updater::loop, "kiosk-updater");
         updaterThread.setPriority(Thread.MIN_PRIORITY);
         updaterThread.start();
+        ownUpdater = new OwnUpdater(this);
+        ownUpdaterThread = new Thread(ownUpdater::loop, "app-updater");
+        ownUpdaterThread.setPriority(Thread.MIN_PRIORITY);
+        ownUpdaterThread.start();
 
         token();
         http = new HttpApi(this, HTTP_PORT);
@@ -141,7 +142,7 @@ public class BridgeService extends Service {
 
     /** Runs one update check off the caller's thread. */
     void checkUpdateAsync() {
-        new Thread(updater::checkNow, "kiosk-update-now").start();
+        new Thread(() -> { updater.checkNow(); ownUpdater.checkNow(); }, "update-now").start();
     }
 
     private void pollDock() {
@@ -197,13 +198,13 @@ public class BridgeService extends Service {
         running = false;
         if (oemKeys != null) unregisterReceiver(oemKeys);
         if (oem != null) oem.stop();
-        if (anchor != null) anchor.stop();
         if (discovery != null) discovery.stop();
         if (wakeLight != null) wakeLight.stop();
         if (wakeThread != null) wakeThread.interrupt();
         if (http != null) http.shutdown();
         if (poller != null) poller.interrupt();
         if (updaterThread != null) updaterThread.interrupt();
+        if (ownUpdaterThread != null) ownUpdaterThread.interrupt();
         instance = null;
         super.onDestroy();
     }

@@ -28,7 +28,13 @@ fi
 build() {
   local name="$1" src="$ROOT/apps/$1" b="$ROOT/out/build/$1"
   rm -rf "$b"; mkdir -p "$b/gen" "$b/classes" "$b/dex"
-  "$BT/aapt2" compile --dir "$src/res" -o "$b/res.zip"
+  # ClockBridge carries a copy of the ROM's provision.json (newer defaults arrive with app updates).
+  local res="$src/res"
+  if [ "$name" = ClockBridge ]; then
+    res="$b/res"; cp -R "$src/res" "$res"; mkdir -p "$res/raw"
+    cp "$ROOT/rom/product/etc/kioskclock/provision.json" "$res/raw/provision.json"
+  fi
+  "$BT/aapt2" compile --dir "$res" -o "$b/res.zip"
   "$BT/aapt2" link -I "$JAR" --manifest "$src/AndroidManifest.xml" -o "$b/unsigned.apk" \
     --java "$b/gen" "$b/res.zip"
   find "$src/src" "$b/gen" -name '*.java' > "$b/sources.txt"
@@ -42,6 +48,6 @@ build() {
   echo "built out/apps/$name.apk  sha256=$(shasum -a 256 "$ROOT/out/apps/$name.apk" | cut -c1-16)"
 }
 
-for app in "${@:-ClockBridge KioskNav}"; do
+for app in "${@:-ClockCore ClockBridge KioskNav}"; do
   for a in $app; do build "$a"; done
 done

@@ -40,6 +40,12 @@ final class AlarmButtons extends BroadcastReceiver {
 
     /** True if a matching button was found and clicked. */
     boolean press(String cmd) {
+        if (pressOne(cmd)) return true;
+        // A ringing timer has no Snooze: a snooze tap stops it instead.
+        return cmd.equals("snooze") && pressOne("stop");
+    }
+
+    private boolean pressOne(String cmd) {
         List<AccessibilityWindowInfo> windows = svc.getWindows();
         for (AccessibilityWindowInfo w : windows) {
             AccessibilityNodeInfo root = w.getRoot();
@@ -52,7 +58,7 @@ final class AlarmButtons extends BroadcastReceiver {
             boolean ok = target != null && target.performAction(AccessibilityNodeInfo.ACTION_CLICK);
             Log.i(TAG, "alarm " + cmd + ": pressed \"" + label(hit) + "\" -> " + ok);
             // Kiosk Satellite gives no visible sign of its own; confirm what the tap did.
-            if (ok) snackbar.show(cmd.equals("snooze") ? "Alarm snoozed" : "Alarm stopped");
+            if (ok) snackbar.show(cmd.equals("snooze") ? "Alarm snoozed" : "Stopped");
             return ok;
         }
         Log.i(TAG, "alarm " + cmd + ": no alarm button on screen");

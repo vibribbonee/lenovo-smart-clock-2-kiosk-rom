@@ -46,8 +46,12 @@ class ClockEvent(KioskClockEntity, EventEntity):
     def _handle_clock_event(self, clock_type: str, value: str) -> None:
         if clock_type != self._clock_type:
             return
-        event_type, _, action = value.partition(":")  # button: "hold_up:voice"
+        event_type, _, action = value.partition(":")  # button: "hold_up:voice"; tap: "single:ringing"
         if event_type not in self.event_types:
             return
-        self._trigger_event(event_type, {"action": action} if action else None)
+        if clock_type == "tap":
+            attrs = {"ringing": action == "ringing"}
+        else:
+            attrs = {"action": action} if action else None
+        self._trigger_event(event_type, attrs)
         self.async_write_ha_state()

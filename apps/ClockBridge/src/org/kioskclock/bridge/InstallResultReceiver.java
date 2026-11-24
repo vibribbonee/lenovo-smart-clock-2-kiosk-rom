@@ -6,7 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageInstaller;
 import android.util.Log;
 
-/** Receives the PackageInstaller result for Kiosk Satellite updates. Never launches UI. */
+/** Receives the PackageInstaller result for Kiosk Satellite and own-app updates. Never launches UI. */
 public class InstallResultReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -21,8 +21,14 @@ public class InstallResultReceiver extends BroadcastReceiver {
         } else {
             r = "install failed: status " + status + " " + msg;
         }
-        Log.i(App.TAG, "kiosk update: " + r);
+        String pkg = intent.getStringExtra("pkg");
         BridgeService svc = BridgeService.get();
-        if (svc != null && svc.updater != null) svc.updater.lastResult = r;
+        if (pkg == null || KioskUpdater.PKG.equals(pkg)) {
+            Log.i(App.TAG, "kiosk update: " + r);
+            if (svc != null && svc.updater != null) svc.updater.lastResult = r;
+        } else {
+            Log.i(App.TAG, "app update " + pkg + ": " + r);
+            if (svc != null && svc.ownUpdater != null) svc.ownUpdater.lastResult = pkg + ": " + r;
+        }
     }
 }

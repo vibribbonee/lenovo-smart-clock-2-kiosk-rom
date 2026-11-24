@@ -30,7 +30,8 @@ APKS = {
                     cert="6faf3c4140407473400934d117815a21af1cfefc5c0bee61c858bc3d72ba6fe5"),
 }
 OWN_CERT = "cd2a24e18ae6346eee70813a1001bb1febb401a384c52cc085e966c9303e4026"
-OWN = {"ClockBridge.apk": ("org.kioskclock.bridge", "out/apps"),
+OWN = {"ClockCore.apk": ("org.kioskclock.core", "out/apps"),
+       "ClockBridge.apk": ("org.kioskclock.bridge", "out/apps"),
        "KioskNav.apk": ("org.kioskclock.nav", "out/apps"),
        "KioskFrameworkOverlay.apk": ("org.kioskclock.overlay.framework", "out/overlays")}
 

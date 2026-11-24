@@ -77,9 +77,14 @@
       "why": "Swipe-up Back/Home/Settings bar (no SystemUI on this firmware)."
     },
     {
+      "src": "out/apps/ClockCore.apk",
+      "dst": "/priv-app/ClockCore/ClockCore.apk",
+      "why": "The only persistent app: mic anchor from the start of boot (before HOME). Nothing else, so it rarely changes."
+    },
+    {
       "src": "out/apps/ClockBridge.apk",
       "dst": "/priv-app/ClockBridge/ClockBridge.apk",
-      "why": "Mic anchor, dock, HA API, events, Kiosk Satellite updater, provisioning. Must be priv-app (SELinux: charge_base)."
+      "why": "Dock, HA API and pairing, events, gestures, wake-up light, provisioning, Kiosk Satellite and own-app updater. Privileged (SELinux: charge_base), not persistent, so it updates over the network."
     },
     {
       "src": "out/overlays/KioskFrameworkOverlay.apk",
