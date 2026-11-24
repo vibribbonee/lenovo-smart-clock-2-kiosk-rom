@@ -29,9 +29,14 @@ final class OemBridge implements ServiceConnection {
     private static final String OEM_DESCRIPTOR = "com.google.assistant.IAssistantOemService";
     private static final int TX_REGISTER_MIC = 6;
 
+    private static final long RETRY_MS = 10_000;
+    private static final int MAX_TRIES = 90;   // 15 minutes: ClockBridge starts before the user is unlocked,
+                                               // when the (not direct-boot-aware) OEM service can't run yet
     private final Context ctx;
     private final MicListener listener;
+    private final android.os.Handler handler = new android.os.Handler(android.os.Looper.getMainLooper());
     private boolean bound;
+    private int tries;
 
     OemBridge(Context ctx, Consumer<Boolean> onMuted) {
         this.ctx = ctx;
@@ -39,13 +44,32 @@ final class OemBridge implements ServiceConnection {
     }
 
     void start() {
+        if (bound) return;
         Intent i = new Intent("com.google.assistant.START_OEM_SERVICE").setComponent(new ComponentName(OEM_PKG, OEM_SERVICE));
         try { bound = ctx.bindService(i, this, Context.BIND_AUTO_CREATE); }
         catch (RuntimeException e) { Log.w(App.TAG, "oem service bind: " + e); }
-        if (!bound) Log.w(App.TAG, "oem service not available; mic switch state unknown");
+        if (bound) return;
+        if (++tries < MAX_TRIES) {
+            if (tries == 1) Log.i(App.TAG, "oem service not available yet; retrying every " + RETRY_MS / 1000 + " s");
+            handler.postDelayed(this::start, RETRY_MS);
+        } else {
+            Log.w(App.TAG, "oem service not available; mic switch state unknown");
+        }
     }
 
-    void stop() { if (bound) { ctx.unbindService(this); bound = false; } }
+    void stop() {
+        handler.removeCallbacksAndMessages(null);
+        if (bound) { ctx.unbindService(this); bound = false; }
+    }
+
+    @Override
+    public void onBindingDied(ComponentName name) {
+        Log.w(App.TAG, "oem service binding died; rebinding");
+        try { ctx.unbindService(this); } catch (RuntimeException ignored) { }
+        bound = false;
+        tries = 0;
+        handler.postDelayed(this::start, RETRY_MS);
+    }
 
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
