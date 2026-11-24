@@ -1,0 +1,35 @@
+# TODO (after ROM build 1, 2026-11-24)
+
+## A. Build 2 — out-of-the-box setup (no manual steps after flash or factory reset)
+- [ ] Kiosk Satellite is the home app on first boot: ClockBridge enables `me.jxl.kiosk_satellite/.HomeAlias` (add `CHANGE_COMPONENT_ENABLED_STATE` to the privapp allowlist).
+- [ ] Simple Keyboard enabled + default on first boot.
+- [ ] Kiosk Satellite's special access granted on first boot, only what it needs: its accessibility services, notification listener (media), draw over apps, modify system settings (brightness), battery-optimisation exemption.
+- [ ] Disable unused stock apps on first boot (Browser, Calendar, Contacts, Music, CarBTDemo, MeshTestProvisioner, TalkBack, YGPS, EngineerMode?, MTPDemo…); remove them from the image after a test round.
+- [ ] Sensible defaults: screen timeout / stay awake, time zone and 24-hour clock, locale, DHCP hostname.
+
+## B. Fix what's broken
+- [ ] **Volume:** the scale is 0–100, so step ~6–8 per press; show a small volume bar (KioskNav).
+- [ ] **Brightness and auto-brightness:** find the backlight path (Google apps drove it on stock); light sensor exists (sensor handle 5); manual slider + auto mode.
+- [ ] **Mic mute switch:** verify it's detected on the ROM and that Kiosk Satellite follows it.
+- [ ] **Tap to snooze:** retest without Assistant; fix if the driver needs enabling.
+
+## C. Verify on the ROM (test plan)
+- [ ] Voice works after a reboot (ClockBridge anchor wins the race now that it's persistent).
+- [ ] Dock light + phone charging through ClockBridge (priv-app → SELinux allows it); HA API and webhook from Home Assistant.
+- [ ] Kiosk Satellite auto-update installs silently.
+- [ ] Wi-Fi reconnect, Bluetooth, audio playback, touchscreen, 72 h stability, idle RAM/CPU.
+- [ ] **Factory reset** from Settings and recovery → everything comes back without manual steps.
+
+## D. Decisions / options
+- [ ] **Casting:** gone with the Cast receiver. Options: Kiosk Satellite's own media player for HA (SendSpin), or try re-adding Cast (needs Google Home setup, which depended on Assistant — likely not viable).
+- [ ] ADB in the release build: off by default, on, or Wi-Fi with key; optional this-Mac key in a debug variant.
+- [ ] Lenovo MDM agent (phones home, has OTA code) and the Google OEM app: disable or keep.
+- [ ] Remove the leftover stock apps permanently (after B/C pass).
+
+## E. Nice to have / housekeeping
+- [ ] Post the mic bug report to Kiosk Satellite (docs/reports/).
+- [ ] Home Assistant config examples (REST sensors, light control, webhook automations) in docs.
+- [ ] Reproducible app builds (fixed zip timestamps).
+- [ ] Commit ROM1_FIRST_BOOT.md; back up `keys/`.
+- [ ] Later: try a GSI/LineageOS via DSU without touching our ROM.
+- [ ] Not possible: shorter/no orange unlock warning (LK is signature-checked by the preloader).

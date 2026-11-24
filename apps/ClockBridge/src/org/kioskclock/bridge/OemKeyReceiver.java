@@ -25,6 +25,8 @@ public class OemKeyReceiver extends BroadcastReceiver {
     static final String VOL_UP = "com.tonly.KEYCODE_VOLUME_UP";
     static final String VOL_DOWN = "com.tonly.KEYCODE_VOLUME_DOWN";
     static final String ACTION_EVENT = "org.kioskclock.bridge.EVENT";
+    /** Shown by KioskNav as a short volume bar (extra "percent"). */
+    static final String ACTION_VOLUME = "org.kioskclock.bridge.VOLUME";
     private static final long DOUBLE_TAP_MS = 450;
 
     private final BridgeService svc;
@@ -73,10 +75,18 @@ public class OemKeyReceiver extends BroadcastReceiver {
             emit("dock", "removed");
         } else if (handleVolume && (VOL_UP.equals(a) || VOL_DOWN.equals(a))) {
             if (intent.getIntExtra("EXTRA_DOWN", 0) == 1) {
+                // This firmware's media volume range is 0..100, so ADJUST_RAISE (+1) is inaudible.
+                // Step by 1/15 of the range (the usual Android step count) instead.
                 AudioManager am = context.getSystemService(AudioManager.class);
-                am.adjustStreamVolume(AudioManager.STREAM_MUSIC,
-                        VOL_UP.equals(a) ? AudioManager.ADJUST_RAISE : AudioManager.ADJUST_LOWER, 0);
-                emit("volume", String.valueOf(am.getStreamVolume(AudioManager.STREAM_MUSIC)));
+                int max = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+                int min = am.getStreamMinVolume(AudioManager.STREAM_MUSIC);
+                int step = Math.max(1, Math.round(max / 15f));
+                int cur = am.getStreamVolume(AudioManager.STREAM_MUSIC);
+                int next = Math.max(min, Math.min(max, cur + (VOL_UP.equals(a) ? step : -step)));
+                am.setStreamVolume(AudioManager.STREAM_MUSIC, next, 0);
+                int pct = max == 0 ? 0 : Math.round(next * 100f / max);
+                svc.sendBroadcast(new Intent(ACTION_VOLUME).putExtra("percent", pct));
+                emit("volume", String.valueOf(pct));
             }
         }
     }

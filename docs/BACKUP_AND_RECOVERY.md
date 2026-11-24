@@ -65,3 +65,7 @@ Not yet done: restore rehearsal (Stage 1b), offline `lpunpack` of `super.bin`, s
 - A hardware fault, eMMC wear‑out, or a blown eFuse is not recoverable by any backup.
 - mtkclient behaviour changes between versions; we pin the version used for the backup and record it.
 - Restoring someone else's dump would clone their identity partitions — never do that, and never share ours.
+
+## 7. Restore rehearsal (Stage 1b) — 2026-11-24 01:26, PASSED
+`sudo I_AM_AT_THE_CLOCK=yes scripts/flash/mtk_session.sh rehearsal`: wrote the backup's `logo.bin` to `logo` (sector 291328, 16384 sectors) and read it back in the same BROM session. Read-back (`backups/flash-logs/20261124-012622-rehearsal/logo.readback.bin`, 8,388,608 bytes) is byte-identical to the backup (`cmp`; SHA-256 `efca8863…b05f`). The write path (this Mac, pogo cable, mtkclient 1.6.3 with sudo) is proven.
+mtkclient prints "Failed to dump sector …" after a successful read to a file: in 1.6.3 `xflash_lib.readflash()` returns an empty bytearray when a filename is given, which the caller treats as failure. Cosmetic; always verify by hash.

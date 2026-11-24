@@ -1,0 +1,36 @@
+{
+  "_comment": "Applied once per fresh /data (first boot, factory reset) by ClockBridge. Bump 'version' to re-apply after an update. Every step is idempotent and logged.",
+  "version": 2,
+  "enable_components": [
+    "me.jxl.kiosk_satellite/me.jxl.kiosk_satellite.HomeAlias"
+  ],
+  "input_method": "rkr.simplekeyboard.inputmethod/.latin.LatinIME",
+  "accessibility_services": [
+    "org.kioskclock.nav/org.kioskclock.nav.NavService"
+  ],
+  "disable_packages": [
+    "com.android.browser",
+    "com.android.calendar",
+    "com.android.contacts",
+    "com.android.music",
+    "com.android.wallpaperpicker",
+    "com.android.egg",
+    "com.android.protips",
+    "com.mediatek.bluetooth",
+    "com.mesh.test.provisioner",
+    "com.mediatek.ygps",
+    "com.mediatek.autodialer",
+    "com.mediatek.callrecorder",
+    "com.google.android.marvin.talkback"
+  ],
+  "secure_settings": {
+    "lockscreen.disabled": "1"
+  },
+  "system_settings": {
+    "time_12_24": "24"
+  },
+  "global_settings": {
+    "auto_time": "1"
+  },
+  "time_zone": "Europe/Amsterdam"
+}

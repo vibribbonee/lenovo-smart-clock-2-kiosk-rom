@@ -10,8 +10,8 @@
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.kioskclock.bridge"
-    android:versionCode="3"
-    android:versionName="0.3.0">
+    android:versionCode="4"
+    android:versionName="0.4.0">
 
     <uses-sdk android:minSdkVersion="29" android:targetSdkVersion="29" />
 
@@ -24,6 +24,13 @@
     <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
     <!-- Privileged: silent Kiosk Satellite updates (granted via privapp-permissions in the ROM). -->
     <uses-permission android:name="android.permission.INSTALL_PACKAGES" />
+    <!-- Privileged: first-boot setup (Kiosk home entry, disabling stock apps, time zone). -->
+    <uses-permission android:name="android.permission.CHANGE_COMPONENT_ENABLED_STATE" />
+    <uses-permission android:name="android.permission.SET_TIME_ZONE" />
+    <!-- Privileged: "Restart" in the KioskNav quick panel. -->
+    <uses-permission android:name="android.permission.REBOOT" />
+    <!-- Granted to preinstalled apps: system settings (24 h clock, brightness). -->
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
 
     <application
         android:name=".App"
@@ -31,7 +38,8 @@
         android:persistent="true"
         android:directBootAware="true"
         android:allowBackup="false"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true"
+        android:usesNonSdkApi="true">
 
         <service android:name=".BridgeService"
             android:exported="false"

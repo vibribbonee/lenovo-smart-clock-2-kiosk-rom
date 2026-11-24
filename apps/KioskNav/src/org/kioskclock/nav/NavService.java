@@ -35,11 +35,60 @@ public class NavService extends AccessibilityService {
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable hide = this::hideBar;
 
+    private android.widget.FrameLayout volumeView;
+    private View volumeFill;
+    private boolean volumeShown;
+    private final Runnable hideVolume = this::hideVolumeBar;
+    private VolumeReceiver volumeReceiver;
+
     @Override
     protected void onServiceConnected() {
         wm = getSystemService(WindowManager.class);
         addStrip();
         buildBar();
+        buildVolumeBar();
+        volumeReceiver = new VolumeReceiver(this);
+        registerReceiver(volumeReceiver, new android.content.IntentFilter(VolumeReceiver.ACTION));
+    }
+
+    /** Slim bar at the top centre: there is no SystemUI volume dialog on this firmware. */
+    private void buildVolumeBar() {
+        volumeView = new android.widget.FrameLayout(this);
+        GradientDrawable track = new GradientDrawable();
+        track.setColor(0xCC000000);
+        track.setCornerRadius(12);
+        volumeView.setBackground(track);
+        volumeView.setPadding(6, 6, 6, 6);
+        volumeFill = new View(this);
+        GradientDrawable fill = new GradientDrawable();
+        fill.setColor(Color.WHITE);
+        fill.setCornerRadius(8);
+        volumeFill.setBackground(fill);
+        volumeView.addView(volumeFill, new android.widget.FrameLayout.LayoutParams(0, android.widget.FrameLayout.LayoutParams.MATCH_PARENT));
+    }
+
+    void showVolume(int percent) {
+        int width = 320, height = 28;
+        android.widget.FrameLayout.LayoutParams fl = (android.widget.FrameLayout.LayoutParams) volumeFill.getLayoutParams();
+        fl.width = Math.max(0, (width - 12) * percent / 100);
+        volumeFill.setLayoutParams(fl);
+        if (!volumeShown) {
+            WindowManager.LayoutParams lp = new WindowManager.LayoutParams(width, height,
+                    WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                    PixelFormat.TRANSLUCENT);
+            lp.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;
+            lp.y = 24;
+            wm.addView(volumeView, lp);
+            volumeShown = true;
+        }
+        handler.removeCallbacks(hideVolume);
+        handler.postDelayed(hideVolume, 1500);
+    }
+
+    private void hideVolumeBar() {
+        handler.removeCallbacks(hideVolume);
+        if (volumeShown) { wm.removeView(volumeView); volumeShown = false; }
     }
 
     private WindowManager.LayoutParams params(int height, boolean watchOutside) {
@@ -155,6 +204,8 @@ public class NavService extends AccessibilityService {
     @Override
     public void onDestroy() {
         hideBar();
+        hideVolumeBar();
+        if (volumeReceiver != null) unregisterReceiver(volumeReceiver);
         if (strip != null) wm.removeView(strip);
         super.onDestroy();
     }

@@ -7,6 +7,7 @@ BACKUP="${BACKUP:-backups/20261123-233949-1.2.2.627}"
 [ -f firmware/original/product.img ] || python3 -I scripts/build/lp_unpack.py "$BACKUP/partitions/super.bin" firmware/original
 scripts/build/build_apps.sh
 scripts/build/build_overlays.sh
+python3 -I scripts/build/check_privapp.py out/apps/ClockBridge.apk org.kioskclock.bridge rom/product/etc/permissions/privapp-permissions-kioskclock.xml
 rm -f firmware/work/product.img firmware/work/super.img
 python3 -I scripts/build/build_product.py
 scripts/build/build_vbmeta.sh

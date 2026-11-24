@@ -8,5 +8,8 @@
     <privapp-permissions package="org.kioskclock.bridge">
         <permission name="android.permission.WRITE_SECURE_SETTINGS" />
         <permission name="android.permission.INSTALL_PACKAGES" />
+        <permission name="android.permission.CHANGE_COMPONENT_ENABLED_STATE" />
+        <permission name="android.permission.SET_TIME_ZONE" />
+        <permission name="android.permission.REBOOT" />
     </privapp-permissions>
 </permissions>

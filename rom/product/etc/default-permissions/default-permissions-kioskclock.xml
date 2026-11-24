@@ -8,5 +8,8 @@
         <permission name="android.permission.RECORD_AUDIO" fixed="false" />
         <permission name="android.permission.ACCESS_COARSE_LOCATION" fixed="false" />
         <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="false" />
+        <!-- Android 10 equivalent of its "All files access" (media/screensaver files). -->
+        <permission name="android.permission.READ_EXTERNAL_STORAGE" fixed="false" />
+        <permission name="android.permission.WRITE_EXTERNAL_STORAGE" fixed="false" />
     </exception>
 </exceptions>
