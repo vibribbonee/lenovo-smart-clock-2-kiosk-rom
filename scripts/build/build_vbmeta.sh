@@ -13,7 +13,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 A() { python3 -I "$ROOT/tools/avb/avbtool.py" "$@"; }
 W="$ROOT/firmware/work"; O="$ROOT/firmware/original"
-B="$ROOT/backups/20261123-233949-1.2.2.627/partitions"
+. "$ROOT/scripts/lib_backup.sh"
+B="$BACKUP/partitions"
 KEY="$ROOT/keys/avb_kioskclock.pem"
 PRODUCT_PARTITION_MIB=816
 
@@ -48,5 +49,5 @@ open(sys.argv[2], 'wb').write(bytes(d))
 EOF
 
 for f in product.avb.img vbmeta_system.img vbmeta_disabled.img; do
-  printf "%-20s %10s bytes  sha256 %s\n" "$f" "$(stat -f %z "$W/$f")" "$(shasum -a 256 "$W/$f" | cut -c1-16)"
+  printf "%-20s %10s bytes  sha256 %s\n" "$f" "$(wc -c < "$W/$f" | tr -d " ")" "$(shasum -a 256 "$W/$f" | cut -c1-16)"
 done

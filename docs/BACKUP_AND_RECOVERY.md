@@ -28,7 +28,7 @@ Store under `backups/<YYYYMMDD>-<build>/` — **outside git**, never uploaded, r
 | E. Logical images | `system.img`, `vendor.img`, `product.img` extracted from `super.bin` | `lpunpack` on the Mac (offline) — these become `firmware/original/` |
 | F. Android‑level | `adb` file pulls of `/system`, `/vendor`, `/product` (world‑readable parts), package list, settings, getprop | Already partly in `investigation/device/` |
 
-For each file: SHA‑256, size in bytes, expected size from GPT, and the exact command + mtkclient version + date are written to `MANIFEST.tsv` by `scripts/backup/verify_backup.sh`.
+For each file: SHA‑256, size in bytes, expected size from GPT, and the exact command + mtkclient version + date are written to `<backup>.MANIFEST.tsv` by `scripts/backup/verify_backup.py` (run automatically by `./clockrom.sh backup`; `--second <dir>` compares two independent reads).
 
 ## 3. Verification (evidence, not assumption)
 1. Size of each dump == GPT size × 512.

@@ -5,13 +5,13 @@ Turns a Lenovo Smart Clock 2 (CD‑24502F, MediaTek MT8167S, Android 10, 1 GB RA
 > **Disclaimer.** Not affiliated with Lenovo, Google or MediaTek. This repository contains **only scripts, our own apps and documentation — no Lenovo firmware**. You build the ROM from a backup of *your own* clock. Unlocking and flashing can brick a device; the backup/restore path documented here is tested on one unit, not guaranteed for yours. Use at your own risk.
 
 ## Status
-Built from stock firmware **1.2.2.627** and running on a real clock. Build 2 was flashed and verified; the final build (KioskNav/ClockBridge 0.8.0) is built and verified offline. Still to do on the device: final-build checks and the factory-reset test — see [docs/TODO.md](docs/TODO.md).
+Built from stock firmware **1.2.2.627** and running daily on a real clock (KioskNav/ClockBridge 0.8.0). Tested on one unit. Still open: the factory-reset test and a few on-device checks — see [docs/TODO.md](docs/TODO.md).
 
 ## What you get
 | | |
 |---|---|
 | **Kiosk Satellite** | the only home app, starts on boot, recovers after crashes, updated automatically from its GitHub releases (signature-checked) |
-| **Google WebView 156** | replaces the 2019 WebView 74; updatable |
+| **Modern WebView** | Google WebView you supply (tested: 157) replaces the 2019 WebView 74; updatable |
 | **Voice that works** | ClockBridge holds the mic at 48 kHz stereo from early boot, working around a MediaTek MT8167 capture bug ([details](docs/PERFORMANCE_BASELINE.md)) |
 | **Navigation** | swipe up from the bottom edge: Back · Home · Settings (the firmware has no SystemUI) |
 | **Quick settings** | swipe down from the top edge: brightness + Auto, volume, dock light, Wi‑Fi, Bluetooth, Night light, screen off (tap to wake), restart |
@@ -34,13 +34,24 @@ vbmeta_system re-signed with your own AVB key (dm-verity stays on); bootloader u
 ```
 Why not root/Magisk: modules live in /data and vanish on a factory reset. Why not a GSI/LineageOS: Lenovo's dock service lives in the stock framework. See [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md).
 
-## How to build and flash (summary)
-Requirements: macOS or Linux, Python 3, Java 21, Android SDK (platform 29, build-tools 34), `e2fsprogs`, [mtkclient](https://github.com/bkerler/mtkclient), a pogo-pin USB connection to the clock ([upstream guide](https://github.com/ThomasPrior/LenovoSmartClock2)).
+## Quick start
+You need: a Smart Clock 2 on firmware **1.2.2.627**, a pogo‑pin USB connection ([upstream guide](https://github.com/ThomasPrior/LenovoSmartClock2)), macOS or Linux with Python 3, `e2fsprogs` and [mtkclient](https://github.com/bkerler/mtkclient).
 
-1. **Back up your clock** (read-only, BROM): `sudo I_APPROVE_BROM_READ=yes scripts/backup/mtk_backup_readonly.sh backups` — verify as in [docs/BACKUP_AND_RECOVERY.md](docs/BACKUP_AND_RECOVERY.md). Keep it private: it contains your device's identity data.
-2. **Get the prebuilt APKs** into `rom/prebuilt/` (Kiosk Satellite, Google WebView, Simple Keyboard; hashes in `rom/prebuilt/SHA256SUMS`) and `tools/avb/avbtool.py` from AOSP.
-3. **Build:** `scripts/build/build_rom.sh` → `firmware/work/super.img`, `vbmeta_system.part.img`, `BUILD.txt`. First run creates your signing keys in `keys/` — back them up.
-4. **Rehearse a restore, then flash:** `scripts/flash/mtk_session.sh rehearsal`, then `flash` (first time: wipes data, unlocks) or `update` (later builds, keeps data). Procedure and recovery: [docs/FLASHING.md](docs/FLASHING.md).
+```bash
+git clone https://github.com/vibribbonee/lenovo-smart-clock-2-kiosk-rom && cd lenovo-smart-clock-2-kiosk-rom
+./clockrom.sh doctor      # checks tools, fetches AOSP avbtool
+./clockrom.sh backup      # read-only full backup of your clock (~15 min) + verification
+./clockrom.sh build --webview ~/Downloads/<webview>.apk    # offline build from your backup
+./clockrom.sh flash       # restore rehearsal, then first flash (unlock + wipe) or update (keeps data)
+```
+Nothing is written to the clock unless you type the confirmation word the script shows. `./clockrom.sh restore` puts your stock firmware back. Details and manual recovery: [docs/FLASHING.md](docs/FLASHING.md), [docs/BACKUP_AND_RECOVERY.md](docs/BACKUP_AND_RECOVERY.md).
+
+`build` fetches the latest Kiosk Satellite (GitHub) and Simple Keyboard (F‑Droid) and checks every APK's package, signing certificate, 32‑bit ARM code and Android 10 compatibility before it goes in. With the Android SDK (platform 29, build‑tools 34, Java 21) our own apps are built from source; without it, the signed APKs from this repo's latest release are used.
+
+### Why you bring your own firmware and WebView
+This repository ships **no Lenovo or Google binaries**: they're copyrighted and not ours to redistribute, and a repo that hosts them gets taken down. So:
+- **Firmware** comes from *your* clock: `./clockrom.sh backup` dumps it, and the ROM is built from that dump. The backup is also your way back to stock, so it's step one anyway. Keep it private — it holds your clock's serial, MAC addresses and calibration data.
+- **Google WebView**: the clock's own WebView is Chromium 74 (2019), too old for current Home Assistant dashboards. Download Android System WebView from **[APKMirror](https://www.apkmirror.com/apk/google-inc/android-system-webview/)**: latest **stable** release (not Beta/Dev/Canary) → variant **armeabi‑v7a**, **nodpi**, minimum Android ≤ 10 → the plain **.apk** (not an `.apkm` bundle, not Trichrome). Pass it with `--webview FILE`. The script refuses a wrong variant or a file not signed by Google. Already have a newer WebView on the clock? `--webview-from-device` pulls it over adb. `--no-webview` keeps WebView 74.
 
 ## Documentation
 | Doc | Content |

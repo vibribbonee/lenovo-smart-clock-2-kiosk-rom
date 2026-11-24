@@ -13,10 +13,11 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"; cd "$ROOT"
 MODE="${1:?mode: rehearsal | flash | update | disable-verity | restore-stock}"
 [ "${I_AM_AT_THE_CLOCK:-}" = "yes" ] || { echo "Set I_AM_AT_THE_CLOCK=yes (see docs/FLASHING.md)"; exit 1; }
-MTK=/opt/homebrew/bin/mtk
-BK="$ROOT/backups/20261123-233949-1.2.2.627"
+MTK="${MTK:-$(command -v mtk || echo /opt/homebrew/bin/mtk)}"
+. "$ROOT/scripts/lib_backup.sh"
+BK="$BACKUP"
 W="$ROOT/firmware/work"
-MAN="$ROOT/backups/20261123-233949-1.2.2.627.MANIFEST.tsv"
+MAN="$BACKUP_MANIFEST"
 LOG="$ROOT/backups/flash-logs/$(date +%Y%m%d-%H%M%S)-$MODE"; mkdir -p "$LOG"
 
 want_backup() {  # verify a backup partition dump against the backup manifest
@@ -60,7 +61,8 @@ echo "Now: power off the clock, hold BOTH volume keys, plug power in (pogo USB a
 
 if [ "$MODE" = rehearsal ]; then
   a=$(shasum -a 256 "$BK/partitions/logo.bin" | cut -d' ' -f1); b=$(shasum -a 256 "$LOG/logo.readback.bin" | cut -d' ' -f1)
-  [ "$a" = "$b" ] && echo "REHEARSAL OK: logo written and read back identically ($a)" || echo "REHEARSAL MISMATCH: $a vs $b"
+  if [ "$a" = "$b" ]; then echo "REHEARSAL OK: logo written and read back identically ($a)"; echo "$a" > "$LOG/REHEARSAL_OK"
+  else echo "REHEARSAL MISMATCH: $a vs $b"; fi
 fi
 [ -n "${SUDO_USER:-}" ] && chown -R "$SUDO_USER" "$LOG"
 echo "log: $LOG"

@@ -20,3 +20,5 @@ tools/
 apk-test/
 __pycache__/
 *.pyc
+*.apkm
+*.xapk
