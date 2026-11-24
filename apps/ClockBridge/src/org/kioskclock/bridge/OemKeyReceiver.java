@@ -145,9 +145,18 @@ public class OemKeyReceiver extends BroadcastReceiver {
         runShortcut(action);
     }
 
+    /** A hard slam often registers as several taps; ignore alarm actions this soon after one. */
+    private static final long ALARM_GUARD_MS = 2000;
+    private long lastAlarmTap;
+
     private void onTap(String kind) {
         String action = actionFor("tap_" + kind);
         emit("tap", kind);
+        if (action != null && action.startsWith("alarm_")) {
+            long now = SystemClock.uptimeMillis();
+            if (now - lastAlarmTap < ALARM_GUARD_MS) { Log.i(App.TAG, "tap " + kind + ": ignored (just handled the alarm)"); return; }
+            lastAlarmTap = now;
+        }
         runShortcut(action);
     }
 

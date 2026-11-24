@@ -25,8 +25,12 @@ final class AlarmButtons extends BroadcastReceiver {
     private static final String TAG = "KioskNav";
 
     private final AccessibilityService svc;
+    private final Snackbar snackbar;
 
-    AlarmButtons(AccessibilityService svc) { this.svc = svc; }
+    AlarmButtons(AccessibilityService svc) {
+        this.svc = svc;
+        this.snackbar = new Snackbar(svc);
+    }
 
     @Override
     public void onReceive(Context c, Intent i) {
@@ -47,6 +51,8 @@ final class AlarmButtons extends BroadcastReceiver {
             while (target != null && !target.isClickable()) target = target.getParent();
             boolean ok = target != null && target.performAction(AccessibilityNodeInfo.ACTION_CLICK);
             Log.i(TAG, "alarm " + cmd + ": pressed \"" + label(hit) + "\" -> " + ok);
+            // Kiosk Satellite gives no visible sign of its own; confirm what the tap did.
+            if (ok) snackbar.show(cmd.equals("snooze") ? "Alarm snoozed" : "Alarm stopped");
             return ok;
         }
         Log.i(TAG, "alarm " + cmd + ": no alarm button on screen");

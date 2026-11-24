@@ -1,7 +1,8 @@
 # TODO (updated 2026-11-24, build 3: ClockBridge 0.9.0 / KioskNav 0.8.3)
 
 ## Open: verify on the clock
-- [ ] Slam: tap on top snoozes a ringing Kiosk Satellite alarm, double tap stops it; Vol ± change the ringing alarm's volume.
+- [x] Slam: tap on top snoozes a ringing alarm (with an "Alarm snoozed" banner); Vol ± change the ringing alarm's volume (tested 63 → 42 %).
+- [ ] Double tap stops a ringing alarm (needs two taps within 0.45 s; not tried yet).
 - [ ] Gestures from the on-clock settings screen and from HA (`/api/gesture`, the *Run … action* buttons).
 - [ ] Home Assistant integration end to end: discovered via mDNS, *Show token*, entities, pushed events, device triggers.
 - [ ] Dock light + phone charging through HA (clock back on the dock).
