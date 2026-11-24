@@ -1,0 +1,29 @@
+# A calm bedside dashboard for the clock's own screen (Kiosk Satellite shows it; pick it in Kiosk
+# Satellite's Home Assistant settings). 800×480 panel: big tiles, no scrolling.
+# Replace the example entities (weather.home, light.bedroom, …) with yours.
+title: Bedside
+path: bedside
+type: sections
+max_columns: 2
+sections:
+  - type: grid
+    cards:
+      - type: weather-forecast
+        entity: weather.home
+        forecast_type: daily
+        show_forecast: true
+  - type: grid
+    cards:
+      - type: tile
+        entity: light.bedroom
+        features:
+          - type: light-brightness
+      - type: tile
+        entity: light.smart_clock_2_5cf5_dock_light
+        name: Dock light
+      - type: tile
+        entity: sensor.lenovo_lenovocd_24502f_next_alarm
+        name: Next alarm
+      - type: tile
+        entity: media_player.bedroom_lenovo_lenovocd_24502f
+        name: Music

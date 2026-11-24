@@ -30,6 +30,7 @@ PLATFORMS = [
     Platform.NUMBER,
     Platform.SELECT,
     Platform.SENSOR,
+    Platform.UPDATE,
 ]
 
 # Clock events that change polled state: refresh right away instead of waiting for the next poll.

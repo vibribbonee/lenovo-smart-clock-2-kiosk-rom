@@ -314,6 +314,11 @@
       "wake_max": {
         "name": "Wake-up light dock limit"
       }
+    },
+    "update": {
+      "apps_update": {
+        "name": "Kiosk Clock apps"
+      }
     }
   },
   "options": {

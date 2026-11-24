@@ -24,12 +24,15 @@ The integration then registers its own webhook on the clock (no `set_webhook` ne
 | `select.…_mute_indicator`, `…_colour`, `…_size` | mute indicator style |
 | `select.…_hold_volume_up`, `…_hold_volume_down`, `…_tap_on_top`, `…_double_tap_on_top` | what each gesture does (see *Gestures*) |
 | `sensor.…_kiosk_satellite_version`, `…_webview_version`, `…_kiosk_update_status` | diagnostics |
+| `update.…_kiosk_clock_apps` | the ROM's apps vs this repo's latest release, with release notes; *Install* makes the clock update now (ClockBridge 1.0.0+) |
 | `event.…_tap`, `…_button_hold`, `…_mic_switch` | taps (single/double), Vol± holds (attribute `action`), mic switch |
 
 Kiosk Satellite brings its own entities for the screen, media volume, brightness and alarms (its ESPHome device); this integration doesn't duplicate those.
 
 **Automations:** use the device triggers (*Top of the clock double-tapped*, *Volume + held*, *Mic switch set to mute*, *Phone placed on the pad*, *Undocked*, …) or the event entities. Every pushed event is also fired on the bus as `kioskclock_event` with `device_id`, `type`, `value` and `trigger`.
 For a gesture that should only do something in HA, set it to *Home Assistant only* (`ha_event`). Gestures run on the clock, so they keep working when HA is down.
+
+**Blueprint:** *Kiosk Clock gesture* ([import](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://github.com/vibribbonee/lenovo-smart-clock-2-kiosk-rom/blob/main/blueprints/automation/kioskclock/gesture_action.yaml)): pick the clock's *Tap* or *Button hold* event, the gesture, and your actions. It skips taps that snooze or stop a ringing alarm. Example dashboards: [examples/](examples).
 
 ## Gestures
 Four gestures, each set to one action (on the clock: quick panel → **Clock**; in HA: the selects above):

@@ -127,6 +127,12 @@ final class ClockSettings {
             t.setPadding(0, 4, 0, 0);
             list.addView(t);
         }
+        TextView tour = chip("Show the tour", false);
+        tour.setOnClickListener(v -> { hide(); if (ctx instanceof NavService) ((NavService) ctx).showTour(); });
+        LinearLayout tr = new LinearLayout(ctx);
+        tr.setPadding(0, 18, 0, 0);
+        tr.addView(tour);
+        list.addView(tr);
         TextView done = chip("Done", true);
         done.setOnClickListener(v -> hide());
         LinearLayout row = new LinearLayout(ctx);
@@ -233,15 +239,5 @@ final class ClockSettings {
         return t;
     }
 
-    private String ipAddress() {
-        try {
-            android.net.ConnectivityManager cm = ctx.getSystemService(android.net.ConnectivityManager.class);
-            android.net.LinkProperties lp = cm.getLinkProperties(cm.getActiveNetwork());
-            if (lp == null) return null;
-            for (android.net.LinkAddress a : lp.getLinkAddresses()) {
-                if (a.getAddress() instanceof Inet4Address) return a.getAddress().getHostAddress();
-            }
-        } catch (RuntimeException ignored) { }
-        return null;
-    }
+    private String ipAddress() { return Onboarding.ipAddress(ctx); }
 }

@@ -71,6 +71,9 @@ public class NavService extends AccessibilityService {
         pairPrompt = new PairPrompt(this);
         registerReceiver(pairPrompt, new android.content.IntentFilter(PairPrompt.ACTION),
                 "org.kioskclock.permission.CONTROL", null);
+        onboarding = new Onboarding(this);
+        // First boot: give Kiosk Satellite a moment to come up, then show the tour once.
+        if (!Onboarding.done(this)) handler.postDelayed(onboarding::show, 15_000);
         alarmButtons = new AlarmButtons(this);
         registerReceiver(alarmButtons, new android.content.IntentFilter(AlarmButtons.ACTION),
                 "org.kioskclock.permission.CONTROL", null);
@@ -78,6 +81,9 @@ public class NavService extends AccessibilityService {
 
     private AlarmButtons alarmButtons;
     private PairPrompt pairPrompt;
+    private Onboarding onboarding;
+
+    void showTour() { if (onboarding != null) onboarding.show(); }
 
     private Blackout blackout;
     private ScreenReceiver screenReceiver;
@@ -296,6 +302,7 @@ public class NavService extends AccessibilityService {
         if (screenReceiver != null) unregisterReceiver(screenReceiver);
         if (alarmButtons != null) unregisterReceiver(alarmButtons);
         if (pairPrompt != null) { unregisterReceiver(pairPrompt); pairPrompt.hide(); }
+        if (onboarding != null) onboarding.hide();
         if (blackout != null) blackout.off();
         if (panel != null) panel.hide();
         if (topStrip != null) wm.removeView(topStrip);

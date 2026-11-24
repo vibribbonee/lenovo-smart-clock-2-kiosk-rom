@@ -1,0 +1,46 @@
+# Home Assistant dashboard view to control a Kiosk Clock from HA.
+# Settings → Dashboards → (a dashboard) → ⋮ Edit → ⋮ Raw configuration editor, add this view under
+# `views:`. Replace `smart_clock_2_5cf5` with your clock's entity prefix (Settings → Devices → the clock).
+title: Bedside clock
+path: bedside-clock
+type: sections
+sections:
+  - type: grid
+    cards:
+      - type: heading
+        heading: Clock
+      - type: tile
+        entity: light.smart_clock_2_5cf5_dock_light
+        features:
+          - type: light-brightness
+      - type: tile
+        entity: binary_sensor.smart_clock_2_5cf5_phone_charging
+      - type: tile
+        entity: binary_sensor.smart_clock_2_5cf5_mic_muted
+      - type: tile
+        entity: update.smart_clock_2_5cf5_kiosk_clock_apps
+  - type: grid
+    cards:
+      - type: heading
+        heading: Wake-up light
+      - type: tile
+        entity: select.smart_clock_2_5cf5_wake_up_light
+        features:
+          - type: select-options
+      - type: tile
+        entity: number.smart_clock_2_5cf5_wake_up_light_fade_length
+      - type: tile
+        entity: number.smart_clock_2_5cf5_wake_up_light_dock_limit
+  - type: grid
+    cards:
+      - type: heading
+        heading: Gestures
+      - type: entities
+        entities:
+          - select.smart_clock_2_5cf5_tap_on_top
+          - select.smart_clock_2_5cf5_double_tap_on_top
+          - select.smart_clock_2_5cf5_tap_while_ringing
+          - select.smart_clock_2_5cf5_double_tap_while_ringing
+          - select.smart_clock_2_5cf5_hold_volume_up
+          - select.smart_clock_2_5cf5_hold_volume_down
+          - select.smart_clock_2_5cf5_double_tap_speed

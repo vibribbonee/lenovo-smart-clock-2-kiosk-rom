@@ -35,7 +35,7 @@ vbmeta_system re-signed with your own AVB key (dm-verity stays on); bootloader u
 Why not root/Magisk: modules live in /data and vanish on a factory reset. Why not a GSI/LineageOS: Lenovo's dock service lives in the stock framework. See [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md).
 
 ## Quick start
-You need: a Smart Clock 2 on firmware **1.2.2.627**, a pogo‑pin USB connection ([upstream guide](https://github.com/ThomasPrior/LenovoSmartClock2)), and a Mac or Linux PC (tested on macOS; Linux should work but is untested; Windows isn't supported). `./clockrom.sh doctor --install` installs the rest — e2fsprogs, adb, libusb and [mtkclient](https://github.com/bkerler/mtkclient) — asking before each step (mtkclient 1.6.3 was used on a real clock; the installer fetches the current release).
+You need: a Smart Clock 2 on firmware **1.2.2.627**, a pogo‑pin USB connection ([upstream guide](https://github.com/ThomasPrior/LenovoSmartClock2); the wireless-charging dock's USB‑A port is power only, it can't flash), and a Mac or Linux PC (tested on macOS; Linux should work but is untested; Windows isn't supported). `./clockrom.sh doctor --install` installs the rest — e2fsprogs, adb, libusb and [mtkclient](https://github.com/bkerler/mtkclient) — asking before each step (mtkclient 1.6.3 was used on a real clock; the installer fetches the current release).
 
 ```bash
 git clone https://github.com/vibribbonee/lenovo-smart-clock-2-kiosk-rom && cd lenovo-smart-clock-2-kiosk-rom
@@ -48,6 +48,16 @@ Nothing is written to the clock unless you type the confirmation word the script
 
 `build` fetches the latest Kiosk Satellite (GitHub) and Simple Keyboard (F‑Droid) and checks every APK's package, signing certificate, 32‑bit ARM code and Android 10 compatibility before it goes in. With the Android SDK (platform 29, build‑tools 34, Java 21) our own apps are built from source; without it, the signed APKs from this repo's latest release are used.
 
+### First steps after flashing
+1. **The tour** shows the edge controls once (swipe down from the top: quick settings; up from the bottom: Back · Home). Again any time: quick panel → **Clock** → *Show the tour*.
+2. **Wi-Fi**: quick panel → hold the Wi-Fi tile.
+3. **Kiosk Satellite**: on your phone open `http://<clock-ip>:2324` (the IP is in quick panel → **Clock**) and connect it to Home Assistant there, not on the 4-inch screen.
+4. **Microphone gain**: in Kiosk Satellite → **Microphone**, set the gain to about **+15–20 dB**. The default is too quiet for this clock, and *"OK Nabu"* won't trigger.
+5. **A clock that works offline**: Kiosk Satellite → **Screensavers** → *Clock*, with *Night mode* (and *Turn screen off at night after* if you like the stock dark-room behaviour).
+6. **Home Assistant**: add the *Kiosk Clock* integration (below) and tap **Allow** on the clock.
+
+Problems? [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md). What changed from the stock clock: [docs/FAQ.md](docs/FAQ.md).
+
 ### Why you bring your own firmware and WebView
 This repository ships **no Lenovo or Google binaries**: they're copyrighted and not ours to redistribute, and a repo that hosts them gets taken down. So:
 - **Firmware** comes from *your* clock: `./clockrom.sh backup` dumps it, and the ROM is built from that dump. The backup is also your way back to stock, so it's step one anyway. Keep it private — it holds your clock's serial, MAC addresses and calibration data.
@@ -55,6 +65,8 @@ This repository ships **no Lenovo or Google binaries**: they're copyrighted and 
 
 ## Home Assistant
 Install the **Kiosk Clock** integration from this repository with HACS (*Custom repositories* → this repo's URL, type *Integration*), restart HA, and the clock appears under *Discovered*. Pair it by tapping **Allow** on the clock (or enter the token from quick panel → **Clock** → **Show token**) and you get the dock light, phone and mic switch sensors, screen buttons, settings and tap/button triggers. Details and the YAML fallback: [docs/HOME_ASSISTANT.md](docs/HOME_ASSISTANT.md).
+
+Starter automation: the **Kiosk Clock gesture** blueprint ([import it](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://github.com/vibribbonee/lenovo-smart-clock-2-kiosk-rom/blob/main/blueprints/automation/kioskclock/gesture_action.yaml)) runs your actions on a tap, double tap or button hold. Example dashboards: [docs/examples](docs/examples).
 
 ## Updates
 The ROM's own apps update themselves over Wi-Fi from this repository's GitHub releases (ClockBridge checks every 12 h; `kioskclock_app_updates=0` turns it off), like Kiosk Satellite. Only image changes need a USB flash. The one persistent app, **ClockCore**, holds the microphone from the start of boot and nothing else, so it rarely changes.
@@ -69,7 +81,8 @@ The ROM's own apps update themselves over Wi-Fi from this repository's GitHub re
 | [DOCK](docs/DOCK.md) | Dock protocol, decoded `charge_base` codes, hardware key events |
 | [PERFORMANCE_BASELINE](docs/PERFORMANCE_BASELINE.md) | CPU, memory and the MT8167 mic bug |
 | [STAGE2_RESULTS](docs/STAGE2_RESULTS.md), [ROM1_FIRST_BOOT](docs/ROM1_FIRST_BOOT.md), [TODO](docs/TODO.md) | Test results and open items |
-| [HOME_ASSISTANT](docs/HOME_ASSISTANT.md) | Kiosk Clock integration (HACS), API, settings, YAML fallback |
+| [TROUBLESHOOTING](docs/TROUBLESHOOTING.md), [FAQ](docs/FAQ.md) | Symptom → fix, recovery; what's different from the stock clock |
+| [HOME_ASSISTANT](docs/HOME_ASSISTANT.md), [examples](docs/examples), [blueprints](blueprints) | Kiosk Clock integration (HACS), API, settings, YAML fallback; dashboards and the gesture blueprint |
 | [SECURITY_NOTES](docs/SECURITY_NOTES.md) | Notes on third-party root tooling |
 | [IMPLEMENTATION_PLAN](docs/IMPLEMENTATION_PLAN.md), [TEST_PLAN](docs/TEST_PLAN.md) | Plan and test checklist |
 

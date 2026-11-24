@@ -30,7 +30,10 @@ STATUS = {
     "mic_anchor": "running", "mic_muted": False, "dock_service": True, "dock_mcu": "1", "dock_wireless": "2",
     "webview": "com.android.webview 157.0.8103.38", "kiosk_version": "2026.11.29", "webhook_configured": False,
     "kiosk_auto_update": True, "kiosk_update_result": "up to date", "kiosk_update_checked": 0,
+    "bridge_version": "1.0.0", "apps_update_result": "up to date (v1.0.0)",
 }
+RELEASES = "https://api.github.com/repos/vibribbonee/lenovo-smart-clock-2-kiosk-rom/releases/latest"
+RELEASE = {"tag_name": "v1.0.1", "body": "Fixes", "html_url": "https://github.com/x/releases/tag/v1.0.1"}
 SETTINGS = {
     "kioskclock_mic_indicator": "pill", "kioskclock_mic_color": "#F29900", "kioskclock_mic_size": None,
     "kioskclock_hold_volume_up": None, "kioskclock_hold_volume_down": "ha_event",
@@ -57,6 +60,8 @@ def mock_clock(aioclient_mock: AiohttpClientMocker) -> AiohttpClientMocker:
     aioclient_mock.post(f"{BASE}/api/settings", json={})
     aioclient_mock.post(f"{BASE}/api/screen/off", json={"screen": "black"})
     aioclient_mock.post(f"{BASE}/api/gesture", json={"gesture": "hold_up", "action": "voice"})
+    aioclient_mock.post(f"{BASE}/api/update/check", json={"started": True})
+    aioclient_mock.get(RELEASES, json=RELEASE)
     return aioclient_mock
 
 

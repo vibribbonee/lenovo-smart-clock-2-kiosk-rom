@@ -39,6 +39,13 @@ public class OemKeyReceiver extends BroadcastReceiver {
     static final String ACTION_VOLUME = "org.kioskclock.bridge.VOLUME";
     /** For KioskNav's panel: extra "muted" (boolean) when the switch state is known. */
     static final String ACTION_MIC = "org.kioskclock.bridge.MIC";
+    /** Kiosk Satellite's own events (kiosksatellite.com/docs/android-broadcasts): what is ringing right now. */
+    private static final String KS = "me.jxl.kiosk_satellite.event.";
+    private static final String[] KS_RING_START = {KS + "ALARM_RINGING", KS + "VS_TIMER_FINISHED"};
+    private static final String[] KS_RING_END = {KS + "ALARM_SNOOZED", KS + "ALARM_STOPPED", KS + "ALARM_SILENCED",
+            KS + "VS_TIMER_DISMISSED", KS + "VS_TIMER_CANCELLED"};
+    private static final long RING_MAX_MS = 15 * 60_000L;
+    private long ringingSince;
     /** Window for the second tap of a double tap; kioskclock_double_tap_ms overrides it (300..900). */
     static final long DOUBLE_TAP_MS = 450;
     static final String SETTING_DOUBLE_TAP = "kioskclock_double_tap_ms";
@@ -101,12 +108,20 @@ public class OemKeyReceiver extends BroadcastReceiver {
     IntentFilter filter() {
         IntentFilter f = new IntentFilter();
         for (String a : new String[]{TAP, DOCK_IN, DOCK_OUT, VOL_UP, VOL_DOWN, MIC}) f.addAction(a);
+        for (String a : KS_RING_START) f.addAction(a);
+        for (String a : KS_RING_END) f.addAction(a);
         return f;
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
         String a = intent.getAction();
+        if (a != null && a.startsWith(KS)) {
+            boolean start = a.equals(KS_RING_START[0]) || a.equals(KS_RING_START[1]);
+            ringingSince = start ? SystemClock.uptimeMillis() : 0;
+            Log.i(App.TAG, "kiosk " + a.substring(KS.length()) + (start ? ": ringing" : ": not ringing"));
+            return;
+        }
         if (TAP.equals(a)) {
             long now = SystemClock.uptimeMillis();
             long window = doubleTapMs();
@@ -137,7 +152,7 @@ public class OemKeyReceiver extends BroadcastReceiver {
         if (key.equals(heldKey)) return;            // auto-repeat while held
         heldKey = key;
         holdFired = false;
-        keyStream = alarmPlaying() ? AudioManager.STREAM_ALARM : AudioManager.STREAM_MUSIC;
+        keyStream = alarmAudio() ? AudioManager.STREAM_ALARM : AudioManager.STREAM_MUSIC;
         volumeBefore = audio().getStreamVolume(keyStream);
         stepVolume(VOL_UP.equals(key) ? 1 : -1);    // immediate feedback, undone if it becomes a hold
         handler.removeCallbacks(holdCheck);
@@ -215,8 +230,13 @@ public class OemKeyReceiver extends BroadcastReceiver {
         return v == null || v.isEmpty() ? def : v;
     }
 
-    /** True while something plays with alarm usage (a ringing Kiosk Satellite alarm). */
+    /** An alarm or timer is ringing: Kiosk Satellite said so, or something plays with alarm usage. */
     private boolean alarmPlaying() {
+        if (ringingSince != 0 && SystemClock.uptimeMillis() - ringingSince < RING_MAX_MS) return true;
+        return alarmAudio();
+    }
+
+    private boolean alarmAudio() {
         try {
             for (android.media.AudioPlaybackConfiguration c : audio().getActivePlaybackConfigurations()) {
                 if (c.getAudioAttributes().getUsage() == android.media.AudioAttributes.USAGE_ALARM) return true;

@@ -1,4 +1,4 @@
-# TODO (updated 2026-11-24, build 3: ClockBridge 0.9.0 / KioskNav 0.8.3)
+# TODO (updated 2026-11-25, build 7: ClockCore 1.0 / ClockBridge 1.0.0 / KioskNav 1.0.0)
 
 ## Open: verify on the clock
 - [x] Slam: tap on top snoozes a ringing alarm (with an "Alarm snoozed" banner); Vol ± change the ringing alarm's volume (tested 63 → 42 %).
@@ -11,6 +11,20 @@
 - [ ] Kiosk Satellite auto-update installs silently (needs a new Kiosk release to happen).
 - [ ] Wi-Fi reconnect, Bluetooth audio, 72 h stability, idle RAM/CPU.
 - [ ] **Factory reset** from Settings and recovery: everything comes back without manual steps. Check the leftover Device Owner (`com.google.assistant.core`, no longer in the image) doesn't get in the way.
+
+## Open: next up
+- [ ] Kiosk Satellite defaults through its `ProvisionActivity` (`ks.provision`, needs `DUMP`, which a priv-app can hold): microphone gain (~+17 dB), Clock screensaver with Night mode. Payload format undocumented: test on the clock over adb with a harmless payload first.
+- [ ] Bluetooth speaker mode: check for A2DP sink on this build (`getprop | grep -i a2dp`, `dumpsys bluetooth_manager`); if present, a quick-panel "Bluetooth speaker" tile that makes the clock discoverable.
+- [ ] Build 7 on the clock: ClockCore holds the mic at boot, ClockBridge starts without being persistent, one real over-Wi-Fi update (publish v1.0.0 first), onboarding tour, timers with the tap.
+
+## Backlog
+- [ ] Flashing without `sudo` (mtkclient + libusb permissions on macOS/Linux) and Windows support.
+- [ ] WebView: a stable official download source would allow auto-fetch (APKMirror blocks scripted downloads); keep the manual file option.
+- [ ] Remove the 5 still-visible disabled system apps from the image (needs re-hashing system; see the discussion in git history).
+- [ ] CI: GitHub Action running the HA tests, hassfest and HACS validation on every push.
+- [ ] HA: switches for app updates and the mic anchor; diagnostics download; translations (contributions welcome).
+- [ ] Onboarding: a QR code for the Kiosk Satellite Remote page.
+- Not possible: flashing through the dock (its USB-A port is power only).
 
 ## Open: decisions
 - [ ] **Casting:** gone with the Cast receiver. Kiosk Satellite's media player (Sendspin / Music Assistant) is the realistic replacement.

@@ -1,0 +1,75 @@
+blueprint:
+  name: Kiosk Clock gesture
+  description: >-
+    Run actions when the Lenovo Smart Clock 2 (Kiosk Clock ROM) is tapped on top, double-tapped, or a
+    volume key is held. Tip: set that gesture to "Home Assistant only" on the clock (quick panel →
+    Clock) so the clock itself does nothing else. Taps that snooze or stop a ringing alarm are
+    skipped unless you turn that off.
+  domain: automation
+  author: Kiosk Clock ROM
+  source_url: https://github.com/vibribbonee/lenovo-smart-clock-2-kiosk-rom/blob/main/blueprints/automation/kioskclock/gesture_action.yaml
+  homeassistant:
+    min_version: "2026.7.0"
+  input:
+    gesture:
+      name: Gesture
+      icon: mdi:gesture-tap
+      input:
+        gesture_entity:
+          name: Clock event
+          description: The clock's Tap or Button hold event entity.
+          selector:
+            entity:
+              integration: kioskclock
+              domain: event
+        gesture_type:
+          name: Which gesture
+          default: double
+          selector:
+            select:
+              options:
+                - label: Tap on top
+                  value: single
+                - label: Double tap on top
+                  value: double
+                - label: Hold volume +
+                  value: hold_up
+                - label: Hold volume −
+                  value: hold_down
+        gesture_actions:
+          name: Actions
+          selector:
+            action: {}
+    options:
+      name: Options
+      icon: mdi:cog
+      collapsed: true
+      input:
+        skip_while_ringing:
+          name: Skip taps while an alarm or timer rings
+          description: Those taps already snooze or stop the alarm on the clock.
+          default: true
+          selector:
+            boolean: {}
+
+mode: single
+max_exceeded: silent
+
+triggers:
+  - trigger: event.received
+    target:
+      entity_id: !input gesture_entity
+    options:
+      event_type:
+        - !input gesture_type
+
+conditions:
+  - condition: not
+    enabled: !input skip_while_ringing
+    conditions:
+      - condition: state
+        entity_id: !input gesture_entity
+        attribute: ringing
+        state: true
+
+actions: !input gesture_actions
