@@ -44,7 +44,7 @@ final class QuickPanel {
     private SeekBar brightness, volume, light;
     private Switch auto;
     private View lightRow;
-    private TextView wifi, bt, dnd, night;
+    private TextView wifi, bt, night;
     private boolean shown;
 
     QuickPanel(NavService svc) {
@@ -98,22 +98,18 @@ final class QuickPanel {
         lightRow.setVisibility(View.GONE);
         root.addView(r3);
 
+        // Tiles: tap = main action, long-press = the matching settings page (as on stock Android).
         LinearLayout r4 = row();
-        wifi = tile("Wi-Fi", v -> { hide(); svc.startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); });
-        bt = tile("Bluetooth", v -> toggleBluetooth());
-        dnd = tile("Do not disturb", v -> {
-            boolean on = !isDnd();
-            control(new Intent(CONTROL).putExtra("cmd", "dnd").putExtra("on", on));
+        wifi = tile(v -> openSettings(Settings.ACTION_WIFI_SETTINGS), Settings.ACTION_WIFI_SETTINGS);
+        bt = tile(v -> toggleBluetooth(), Settings.ACTION_BLUETOOTH_SETTINGS);
+        night = tile(v -> {
+            control(new Intent(CONTROL).putExtra("cmd", "night").putExtra("on", !isNight()));
             handler.postDelayed(this::refresh, 400);
-        });
-        night = tile("Night light", v -> {
-            boolean on = !isNight();
-            control(new Intent(CONTROL).putExtra("cmd", "night").putExtra("on", on));
-            handler.postDelayed(this::refresh, 400);
-        });
-        TextView off = tile("Screen off", v -> { hide(); svc.performGlobalAction(AccessibilityService.GLOBAL_ACTION_LOCK_SCREEN); });
+        }, Settings.ACTION_DISPLAY_SETTINGS);
+        TextView off = tile(v -> { hide(); svc.blackout(); }, null);
         off.setOnLongClickListener(v -> { hide(); control(new Intent(CONTROL).putExtra("cmd", "reboot")); return true; });
-        for (TextView t : new TextView[]{wifi, bt, dnd, night, off}) r4.addView(t, weight());
+        setTile(off, "\uD83C\uDF19", "Screen off", "Hold: restart", false);
+        for (TextView t : new TextView[]{wifi, bt, night, off}) r4.addView(t, weight());
         root.addView(r4);
     }
 
@@ -161,19 +157,29 @@ final class QuickPanel {
         volume.setProgress(svc.getSystemService(AudioManager.class).getStreamVolume(AudioManager.STREAM_MUSIC));
         ConnectivityManager cm = svc.getSystemService(ConnectivityManager.class);
         NetworkCapabilities nc = cm.getNetworkCapabilities(cm.getActiveNetwork());
-        setOn(wifi, nc != null && nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI));
+        boolean wifiUp = nc != null && nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI);
+        setTile(wifi, "\uD83D\uDCF6", "Wi-Fi", wifiUp ? "Connected" : "Not connected", wifiUp);
         BluetoothAdapter a = BluetoothAdapter.getDefaultAdapter();
-        setOn(bt, a != null && a.isEnabled());
-        setOn(dnd, isDnd());
-        setOn(night, isNight());
+        String btState = "Unavailable";
+        boolean btOn = false;
+        if (a != null) {
+            int st = a.getState();
+            btOn = st == BluetoothAdapter.STATE_ON;
+            boolean connected = btOn && (a.getProfileConnectionState(android.bluetooth.BluetoothProfile.A2DP) == BluetoothAdapter.STATE_CONNECTED
+                    || a.getProfileConnectionState(android.bluetooth.BluetoothProfile.HEADSET) == BluetoothAdapter.STATE_CONNECTED);
+            btState = st == BluetoothAdapter.STATE_TURNING_ON ? "Turning on\u2026"
+                    : st == BluetoothAdapter.STATE_TURNING_OFF ? "Turning off\u2026"
+                    : connected ? "Connected" : btOn ? "On" : "Off";
+        }
+        setTile(bt, "\u16D2", "Bluetooth", btState, btOn);
+        boolean nightOn = isNight();
+        setTile(night, "\uD83C\uDF05", "Night light", nightOn ? "On" : "Off", nightOn);
     }
 
     private boolean isAuto() {
         return Settings.System.getInt(svc.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS_MODE, 0)
                 == Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
     }
-
-    private boolean isDnd() { return Settings.Global.getInt(svc.getContentResolver(), "zen_mode", 0) != 0; }
 
     private boolean isNight() { return Settings.Secure.getInt(svc.getContentResolver(), "night_display_activated", 0) != 0; }
 
@@ -185,7 +191,8 @@ final class QuickPanel {
         BluetoothAdapter a = BluetoothAdapter.getDefaultAdapter();
         if (a == null) return;
         if (a.isEnabled()) a.disable(); else a.enable();
-        handler.postDelayed(this::refresh, 1500);
+        handler.postDelayed(this::refresh, 300);
+        handler.postDelayed(this::refresh, 2500);
     }
 
     private void control(Intent i) {
@@ -225,21 +232,32 @@ final class QuickPanel {
         return s;
     }
 
-    private TextView tile(String label, View.OnClickListener click) {
+    private void openSettings(String action) {
+        hide();
+        svc.startActivity(new Intent(action).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+    }
+
+    private TextView tile(View.OnClickListener click, String longPressSettings) {
         TextView t = new TextView(svc);
-        t.setText(label);
-        t.setTextColor(Color.WHITE);
         t.setTextSize(14);
         t.setGravity(Gravity.CENTER);
-        t.setPadding(8, 22, 8, 22);
+        t.setPadding(8, 16, 8, 16);
         t.setOnClickListener(v -> { click.onClick(v); restartTimer(); });
-        setOn(t, false);
+        if (longPressSettings != null) t.setOnLongClickListener(v -> { openSettings(longPressSettings); return true; });
         return t;
     }
 
-    private static void setOn(TextView t, boolean on) {
+    /** Android-style tile: icon + name on the first line, current state below; filled when on. */
+    private static void setTile(TextView t, String icon, String label, String state, boolean on) {
+        android.text.SpannableStringBuilder b = new android.text.SpannableStringBuilder();
+        b.append(icon).append("  ").append(label).append("\n");
+        int start = b.length();
+        b.append(state);
+        b.setSpan(new android.text.style.RelativeSizeSpan(0.85f), start, b.length(), 0);
+        b.setSpan(new android.text.style.ForegroundColorSpan(on ? 0xFF3C4043 : 0xFFBDC1C6), start, b.length(), 0);
+        t.setText(b);
         GradientDrawable d = new GradientDrawable();
-        d.setCornerRadius(20);
+        d.setCornerRadius(24);
         d.setColor(on ? 0xFF8AB4F8 : 0xFF3C4043);
         t.setBackground(d);
         t.setTextColor(on ? 0xFF202124 : Color.WHITE);

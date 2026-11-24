@@ -6,20 +6,78 @@
   },
   "product_size_mib": 800,
   "remove": [
-    {"path": "/priv-app/com.google.android.apps.mediashell", "why": "Google Cast receiver: ~200 MB RAM, ~9% CPU, opens the mic at 16 kHz first (breaks voice). Disabled on stock with no breakage."},
-    {"path": "/priv-app/com.google.assistant.core", "why": "Google Assistant: Device Owner, hotword mic capture, setup flow that needs the dead Lenovo update server."},
-    {"path": "/priv-app/com.google.android.updater", "why": "Google/Lenovo OTA updater: must not overwrite the modified image. Disabled on stock with no breakage."},
-    {"path": "/app/com.google.assistant.launcher", "why": "Assistant home shim; Kiosk Satellite is the only HOME app."}
+    {
+      "path": "/priv-app/com.google.android.apps.mediashell",
+      "why": "Google Cast receiver: ~200 MB RAM, ~9% CPU, opens the mic at 16 kHz first (breaks voice). Disabled on stock with no breakage."
+    },
+    {
+      "path": "/priv-app/com.google.assistant.core",
+      "why": "Google Assistant: Device Owner, hotword mic capture, setup flow that needs the dead Lenovo update server."
+    },
+    {
+      "path": "/priv-app/com.google.android.updater",
+      "why": "Google/Lenovo OTA updater: must not overwrite the modified image. Disabled on stock with no breakage."
+    },
+    {
+      "path": "/app/com.google.assistant.launcher",
+      "why": "Assistant home shim; Kiosk Satellite is the only HOME app."
+    }
   ],
   "add": [
-    {"src": "rom/prebuilt/KioskSatellite.apk", "dst": "/app/KioskSatellite/KioskSatellite.apk", "why": "Primary interface; updated from GitHub by ClockBridge."},
-    {"src": "rom/prebuilt/GoogleWebView.apk", "dst": "/app/GoogleWebView/GoogleWebView.apk", "why": "Modern WebView provider (156.0.8078.50)."},
-    {"src": "rom/prebuilt/SimpleKeyboard.apk", "dst": "/app/SimpleKeyboard/SimpleKeyboard.apk", "why": "Offline keyboard."},
-    {"src": "out/apps/KioskNav.apk", "dst": "/app/KioskNav/KioskNav.apk", "why": "Swipe-up Back/Home/Settings bar (no SystemUI on this firmware)."},
-    {"src": "out/apps/ClockBridge.apk", "dst": "/priv-app/ClockBridge/ClockBridge.apk", "why": "Mic anchor, dock, HA API, events, Kiosk Satellite updater, provisioning. Must be priv-app (SELinux: charge_base)."},
-    {"src": "out/overlays/KioskFrameworkOverlay.apk", "dst": "/overlay/KioskFrameworkOverlay.apk", "label": "u:object_r:vendor_overlay_file:s0", "why": "Adds Google WebView to config_webview_packages."},
-    {"src": "rom/product/etc/permissions/privapp-permissions-kioskclock.xml", "dst": "/etc/permissions/privapp-permissions-kioskclock.xml", "why": "Required by ro.control_privapp_permissions=enforce."},
-    {"src": "rom/product/etc/default-permissions/default-permissions-kioskclock.xml", "dst": "/etc/default-permissions/default-permissions-kioskclock.xml", "why": "Microphone/location for ClockBridge and Kiosk Satellite after reset."},
-    {"src": "rom/product/etc/sysconfig/kioskclock.xml", "dst": "/etc/sysconfig/kioskclock.xml", "why": "Battery-optimisation exemption."}
-  ]
+    {
+      "src": "rom/prebuilt/KioskSatellite.apk",
+      "dst": "/app/KioskSatellite/KioskSatellite.apk",
+      "why": "Primary interface; updated from GitHub by ClockBridge."
+    },
+    {
+      "src": "rom/prebuilt/GoogleWebView.apk",
+      "dst": "/app/GoogleWebView/GoogleWebView.apk",
+      "why": "Modern WebView provider (156.0.8078.50)."
+    },
+    {
+      "src": "rom/prebuilt/SimpleKeyboard.apk",
+      "dst": "/app/SimpleKeyboard/SimpleKeyboard.apk",
+      "why": "Offline keyboard."
+    },
+    {
+      "src": "out/apps/KioskNav.apk",
+      "dst": "/app/KioskNav/KioskNav.apk",
+      "why": "Swipe-up Back/Home/Settings bar (no SystemUI on this firmware)."
+    },
+    {
+      "src": "out/apps/ClockBridge.apk",
+      "dst": "/priv-app/ClockBridge/ClockBridge.apk",
+      "why": "Mic anchor, dock, HA API, events, Kiosk Satellite updater, provisioning. Must be priv-app (SELinux: charge_base)."
+    },
+    {
+      "src": "out/overlays/KioskFrameworkOverlay.apk",
+      "dst": "/overlay/KioskFrameworkOverlay.apk",
+      "label": "u:object_r:vendor_overlay_file:s0",
+      "why": "Adds Google WebView to config_webview_packages."
+    },
+    {
+      "src": "rom/product/etc/permissions/privapp-permissions-kioskclock.xml",
+      "dst": "/etc/permissions/privapp-permissions-kioskclock.xml",
+      "why": "Required by ro.control_privapp_permissions=enforce."
+    },
+    {
+      "src": "rom/product/etc/default-permissions/default-permissions-kioskclock.xml",
+      "dst": "/etc/default-permissions/default-permissions-kioskclock.xml",
+      "why": "Microphone/location for ClockBridge and Kiosk Satellite after reset."
+    },
+    {
+      "src": "rom/product/etc/sysconfig/kioskclock.xml",
+      "dst": "/etc/sysconfig/kioskclock.xml",
+      "why": "Battery-optimisation exemption."
+    },
+    {
+      "src": "rom/product/etc/kioskclock/provision.json",
+      "dst": "/etc/kioskclock/provision.json",
+      "why": "First-boot setup config read by ClockBridge."
+    }
+  ],
+  "append_props": {
+    "_why": "Appended to /product/build.prop. Non-ro props here override earlier defaults.",
+    "persist.logd.size": "1048576"
+  }
 }

@@ -125,6 +125,21 @@ def main():
         changes.append(f"+ {dst}  ({os.path.getsize(s)} bytes, sha256 {h})")
         print(f"added {dst}")
 
+    # 3c. build.prop additions
+    props = {k: v for k, v in man.get("append_props", {}).items() if not k.startswith("_")}
+    if props:
+        cur = os.path.join(work, "product.build.prop")
+        run(f"{E2}/debugfs", "-R", f"dump /build.prop {cur}", out)
+        text = open(cur).read()
+        text += "\n# kioskclock ROM\n" + "".join(f"{k}={v}\n" for k, v in props.items())
+        open(cur, "w").write(text)
+        debugfs(out, ["rm /build.prop", f"write {cur} /build.prop", "sif /build.prop mode 0100644",
+                      "sif /build.prop uid 0", "sif /build.prop gid 0",
+                      f"ea_set -f {label_file(SYSTEM_LABEL)} /build.prop security.selinux"], write=True)
+        os.unlink(cur)
+        changes += [f"~ /build.prop  +{k}={v}" for k, v in props.items()]
+        print(f"build.prop: added {', '.join(props)}")
+
     # 4. verify
     r = run(f"{E2}/e2fsck", "-fn", out, check=False)
     print(r.stdout.strip().splitlines()[-1])

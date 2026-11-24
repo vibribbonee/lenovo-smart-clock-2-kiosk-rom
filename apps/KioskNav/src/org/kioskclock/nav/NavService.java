@@ -53,7 +53,18 @@ public class NavService extends AccessibilityService {
         dockReceiver = new DockReceiver(panel);
         registerReceiver(dockReceiver, new android.content.IntentFilter(DockReceiver.ACTION));
         addTopStrip();
+        blackout = new Blackout(this);
+        screenReceiver = new ScreenReceiver(this);
+        registerReceiver(screenReceiver, new android.content.IntentFilter(ScreenReceiver.ACTION),
+                "org.kioskclock.permission.CONTROL", null);
     }
+
+    private Blackout blackout;
+    private ScreenReceiver screenReceiver;
+
+    void blackout() { hideBar(); if (panel != null) panel.hide(); blackout.on(); }
+
+    void wake() { blackout.off(); }
 
     private QuickPanel panel;
     private DockReceiver dockReceiver;
@@ -229,6 +240,8 @@ public class NavService extends AccessibilityService {
         hideVolumeBar();
         if (volumeReceiver != null) unregisterReceiver(volumeReceiver);
         if (dockReceiver != null) unregisterReceiver(dockReceiver);
+        if (screenReceiver != null) unregisterReceiver(screenReceiver);
+        if (blackout != null) blackout.off();
         if (panel != null) panel.hide();
         if (topStrip != null) wm.removeView(topStrip);
         if (strip != null) wm.removeView(strip);

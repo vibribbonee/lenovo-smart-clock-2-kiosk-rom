@@ -20,6 +20,7 @@ import java.util.Map;
  *   POST /api/dock/light?level=N  (N = 0..10)
  *   GET  /api/status            -> mic anchor state, dock firmware, WebView and Kiosk Satellite versions
  *   POST /api/update/check      -> check GitHub for a newer Kiosk Satellite now
+ *   POST /api/screen/off|on     -> KioskNav black screen (backlight 0) / wake
  * One request per connection, small bodies only, 5 s socket timeout.
  */
 final class HttpApi extends Thread {
@@ -100,6 +101,10 @@ final class HttpApi extends Thread {
                     + ",\"webhook_configured\":" + (svc.webhook.url() != null)
                     + ",\"kiosk_auto_update\":" + u.enabled()
                     + ",\"kiosk_update_result\":\"" + esc(u.lastResult) + "\",\"kiosk_update_checked\":" + u.lastCheck + "}");
+        } else if (method.equals("POST") && (path.equals("/api/screen/on") || path.equals("/api/screen/off"))) {
+            svc.sendBroadcast(new android.content.Intent("org.kioskclock.nav.SCREEN").setPackage("org.kioskclock.nav")
+                    .putExtra("on", path.endsWith("/on")));
+            reply(c, 200, "{\"screen\":\"" + (path.endsWith("/on") ? "on" : "black") + "\"}");
         } else if (method.equals("POST") && path.equals("/api/update/check")) {
             svc.checkUpdateAsync();
             reply(c, 200, "{\"started\":true}");
