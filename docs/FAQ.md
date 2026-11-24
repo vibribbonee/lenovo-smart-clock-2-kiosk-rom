@@ -12,7 +12,8 @@
 | Volume buttons | Yes, with a click. While an alarm rings they set its volume. Hold either for a shortcut. |
 | Mic switch | Yes: it mutes the microphone in hardware; a red dot (or another style) shows it. |
 | Chromecast / "cast to the clock" | **Not available** (the Google Cast receiver needs Google's setup, which this ROM removes). Instead Kiosk Satellite is a media player for Home Assistant: **Music Assistant / Sendspin**, **DLNA** (cast from apps like BubbleUPnP) and Home Assistant's `media_player` actions. |
-| Bluetooth speaker mode (phone → clock) | **Not yet.** The stock firmware offered it, so the Bluetooth stack may support receiving audio; the pairing screen for it came from Google's apps, which are gone. Being looked into. The clock can play *to* Bluetooth speakers. |
+| Bluetooth speaker mode (phone → clock) | **Yes** (A2DP sink, tested): quick panel → hold the Bluetooth tile → *Pair new device* (the clock is discoverable while that screen is open) → pair *LenovoCD-24502F* from your phone → play. A one-tap "Bluetooth speaker" tile is planned. |
+| Phone → whole house | Music Assistant's *Spotify Connect* and *AirPlay Receiver* plugins send your phone's audio to any Music Assistant player, the clock included (Kiosk Satellite is a Sendspin player). |
 | YouTube, Google Photos frames | Not included. Kiosk Satellite can show photo albums (local, Immich, URLs) and HA camera streams as screensavers. |
 | Google Home app setup | Not needed: set up from the clock itself and Kiosk Satellite's Remote page (`http://<clock-ip>:2324`) on your phone. |
 | Languages | The ROM's own screens and the HA integration are English. Kiosk Satellite and Home Assistant have their own translations; Android's language is in Settings. |
