@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 
 /**
- * org.kioskclock.nav.SCREEN (extra "on": true = wake, false = black), sent by ClockBridge for
+ * org.kioskclock.nav.SCREEN (extra "on": true = wake, false = black; extra "toggle": switch), sent by ClockBridge for
  * Home Assistant. Registered with the project's signature permission, so only our apps can send it.
  */
 public class ScreenReceiver extends BroadcastReceiver {
@@ -16,6 +16,8 @@ public class ScreenReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (intent.getBooleanExtra("on", true)) svc.wake(); else svc.blackout();
+        if (intent.getBooleanExtra("toggle", false)) {
+            if (svc.isBlack()) svc.wake(); else svc.blackout();
+        } else if (intent.getBooleanExtra("on", true)) svc.wake(); else svc.blackout();
     }
 }

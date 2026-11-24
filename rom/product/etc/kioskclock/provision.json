@@ -48,8 +48,10 @@
     }
   },
   "buttons": {
-    "_options": "voice (start Kiosk Satellite listening), play_pause (media), mute (speaker toggle), dock_light (toggle), night_light (toggle), screen_off (black screen), ha_event (only send the hold to Home Assistant), none. Every hold is also sent to HA as a button event.",
+    "_options": "alarm_snooze / alarm_stop (a ringing Kiosk Satellite alarm, like Lenovo's hard tap), voice (start Kiosk Satellite listening), play_pause (media), mute (speaker toggle), dock_light (toggle), night_light (toggle), screen_off (black screen), screen_toggle (black screen / wake), ha_event (only send it to Home Assistant), none. Every gesture is also sent to HA as an event.",
     "hold_volume_up": "voice",
-    "hold_volume_down": "dock_light"
+    "hold_volume_down": "dock_light",
+    "tap_single": "alarm_snooze",
+    "tap_double": "alarm_stop"
   }
 }

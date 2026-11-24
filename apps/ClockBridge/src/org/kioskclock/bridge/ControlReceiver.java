@@ -15,6 +15,7 @@ import android.util.Log;
  *   cmd=dnd on=true|false   Do Not Disturb (Settings.Global zen_mode: 1 = priority only, 0 = off)
  *   cmd=night on=true|false Night Light (Settings.Secure night_display_activated)
  *   cmd=reboot              restart the device
+ *   cmd=token               ordered broadcast; result data = the HTTP API token (for pairing Home Assistant)
  */
 public class ControlReceiver extends BroadcastReceiver {
     static final String ACTION = "org.kioskclock.bridge.CONTROL";
@@ -40,6 +41,9 @@ public class ControlReceiver extends BroadcastReceiver {
                 break;
             case "night":
                 Settings.Secure.putInt(c.getContentResolver(), "night_display_activated", i.getBooleanExtra("on", false) ? 1 : 0);
+                break;
+            case "token":
+                setResultData(BridgeService.token(c));
                 break;
             case "reboot":
                 Log.i(App.TAG, "reboot requested from the quick panel");

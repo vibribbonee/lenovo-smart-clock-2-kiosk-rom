@@ -6,8 +6,8 @@
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.kioskclock.nav"
-    android:versionCode="18"
-    android:versionName="0.8.2">
+    android:versionCode="19"
+    android:versionName="0.8.3">
 
     <uses-sdk android:minSdkVersion="29" android:targetSdkVersion="29" />
 

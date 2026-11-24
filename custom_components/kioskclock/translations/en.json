@@ -1,0 +1,246 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "title": "Add a Smart Clock 2",
+        "description": "Enter the clock's address. The clock is normally found automatically; use this if it isn't. The token is on the clock: swipe up from the bottom edge, open the quick panel, tap **Clock**, then **Show token** (spaces don't matter).",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "token": "API token"
+        },
+        "data_description": {
+          "host": "IP address or hostname of the clock (Clock settings shows it).",
+          "port": "ClockBridge API port, 8765 unless you changed it."
+        }
+      },
+      "token": {
+        "title": "Pair {name}",
+        "description": "Found a Smart Clock 2 running the kiosk ROM at {host}. The token is on the clock: swipe up from the bottom edge, open the quick panel, tap **Clock**, then **Show token** (spaces don't matter).",
+        "data": {
+          "token": "API token"
+        }
+      },
+      "reauth_confirm": {
+        "title": "New API token for {name}",
+        "description": "The clock no longer accepts the stored token. The token is on the clock: swipe up from the bottom edge, open the quick panel, tap **Clock**, then **Show token** (spaces don't matter).",
+        "data": {
+          "token": "API token"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Can't reach the clock. Is it on and on the same network?",
+      "invalid_auth": "The clock rejected this token.",
+      "unknown": "Unexpected answer from the clock; see the log."
+    },
+    "abort": {
+      "already_configured": "This clock is already set up.",
+      "reauth_successful": "Token updated.",
+      "not_ipv4": "Only IPv4 discoveries are used.",
+      "no_device_id": "The clock did not announce a device id."
+    }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "tap_single": "Top of the clock tapped",
+      "tap_double": "Top of the clock double-tapped",
+      "hold_up": "Volume + held",
+      "hold_down": "Volume − held",
+      "mic_muted": "Mic switch set to mute",
+      "mic_unmuted": "Mic switch set to on",
+      "phone_present": "Phone placed on the pad",
+      "phone_charging": "Phone started charging",
+      "phone_none": "Phone taken off the pad",
+      "dock_attached": "Docked",
+      "dock_removed": "Undocked"
+    }
+  },
+  "entity": {
+    "light": {
+      "dock_light": {
+        "name": "Dock light"
+      }
+    },
+    "binary_sensor": {
+      "docked": {
+        "name": "Docked"
+      },
+      "phone_present": {
+        "name": "Phone on pad"
+      },
+      "phone_charging": {
+        "name": "Phone charging"
+      },
+      "mic_muted": {
+        "name": "Mic muted"
+      }
+    },
+    "button": {
+      "screen_on": {
+        "name": "Screen on"
+      },
+      "screen_off": {
+        "name": "Screen off"
+      },
+      "check_update": {
+        "name": "Check Kiosk update"
+      },
+      "run_hold_up": {
+        "name": "Run volume + hold action"
+      },
+      "run_hold_down": {
+        "name": "Run volume − hold action"
+      },
+      "run_tap_single": {
+        "name": "Run tap action"
+      },
+      "run_tap_double": {
+        "name": "Run double-tap action"
+      }
+    },
+    "select": {
+      "mic_indicator": {
+        "name": "Mute indicator",
+        "state": {
+          "dot": "Dot",
+          "dot_quiet": "Quiet dot",
+          "google": "Badge",
+          "pill": "Pill",
+          "edge": "Edge line",
+          "banner": "Banner only",
+          "hidden": "Hidden"
+        }
+      },
+      "mic_color": {
+        "name": "Mute indicator colour",
+        "state": {
+          "red": "Red",
+          "amber": "Amber",
+          "white": "White",
+          "dim": "Dim"
+        }
+      },
+      "mic_size": {
+        "name": "Mute indicator size",
+        "state": {
+          "small": "Small",
+          "default": "Default",
+          "large": "Large"
+        }
+      },
+      "hold_volume_up": {
+        "name": "Hold volume up",
+        "state": {
+          "alarm_snooze": "Snooze alarm",
+          "alarm_stop": "Stop alarm",
+          "voice": "Voice assistant",
+          "play_pause": "Play / pause",
+          "mute": "Mute speaker",
+          "dock_light": "Toggle dock light",
+          "night_light": "Toggle Night Light",
+          "screen_off": "Screen off",
+          "screen_toggle": "Screen on / off",
+          "ha_event": "Home Assistant only",
+          "none": "Nothing"
+        }
+      },
+      "hold_volume_down": {
+        "name": "Hold volume down",
+        "state": {
+          "alarm_snooze": "Snooze alarm",
+          "alarm_stop": "Stop alarm",
+          "voice": "Voice assistant",
+          "play_pause": "Play / pause",
+          "mute": "Mute speaker",
+          "dock_light": "Toggle dock light",
+          "night_light": "Toggle Night Light",
+          "screen_off": "Screen off",
+          "screen_toggle": "Screen on / off",
+          "ha_event": "Home Assistant only",
+          "none": "Nothing"
+        }
+      },
+      "tap_single": {
+        "name": "Tap on top",
+        "state": {
+          "alarm_snooze": "Snooze alarm",
+          "alarm_stop": "Stop alarm",
+          "voice": "Voice assistant",
+          "play_pause": "Play / pause",
+          "mute": "Mute speaker",
+          "dock_light": "Toggle dock light",
+          "night_light": "Toggle Night Light",
+          "screen_off": "Screen off",
+          "screen_toggle": "Screen on / off",
+          "ha_event": "Home Assistant only",
+          "none": "Nothing"
+        }
+      },
+      "tap_double": {
+        "name": "Double tap on top",
+        "state": {
+          "alarm_snooze": "Snooze alarm",
+          "alarm_stop": "Stop alarm",
+          "voice": "Voice assistant",
+          "play_pause": "Play / pause",
+          "mute": "Mute speaker",
+          "dock_light": "Toggle dock light",
+          "night_light": "Toggle Night Light",
+          "screen_off": "Screen off",
+          "screen_toggle": "Screen on / off",
+          "ha_event": "Home Assistant only",
+          "none": "Nothing"
+        }
+      }
+    },
+    "sensor": {
+      "kiosk_version": {
+        "name": "Kiosk Satellite version"
+      },
+      "webview_version": {
+        "name": "WebView version"
+      },
+      "kiosk_update_result": {
+        "name": "Kiosk update status"
+      }
+    },
+    "event": {
+      "tap": {
+        "name": "Tap",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "single": "Tap on top",
+              "double": "Double tap on top"
+            }
+          }
+        }
+      },
+      "button": {
+        "name": "Button hold",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "hold_up": "Volume + held",
+              "hold_down": "Volume − held"
+            }
+          }
+        }
+      },
+      "mic_switch": {
+        "name": "Mic switch",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "muted": "Muted",
+              "unmuted": "On",
+              "changed": "Changed"
+            }
+          }
+        }
+      }
+    }
+  }
+}

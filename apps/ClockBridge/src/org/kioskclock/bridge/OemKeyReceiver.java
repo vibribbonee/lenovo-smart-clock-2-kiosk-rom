@@ -23,6 +23,9 @@ import android.util.Log;
  * When no Google Assistant is installed, the volume buttons are handled here:
  *   short press = media volume step (1/15 of the 0..100 range) + a short click at the new level,
  *   hold (>= HOLD_MS) = configurable shortcut (provision.json "buttons"), the volume step is undone.
+ * Gestures (hold_up, hold_down, tap_single, tap_double) each run a shortcut chosen in the
+ * kioskclock_hold_volume_up/down and kioskclock_tap_single/double settings (see ACTIONS), and are
+ * always sent to Home Assistant too. Home Assistant can also run a gesture or an action directly.
  */
 public class OemKeyReceiver extends BroadcastReceiver {
     static final String TAP = "com.tonly.KEYCODE_TAP";
@@ -41,22 +44,37 @@ public class OemKeyReceiver extends BroadcastReceiver {
 
     private final BridgeService svc;
     private final Handler handler = new Handler(Looper.getMainLooper());
-    private final Runnable singleTap = () -> emit("tap", "single");
+    /** Shortcuts a gesture can run (the same list for every gesture). */
+    static final String ACTIONS = "alarm_snooze|alarm_stop|voice|play_pause|mute|dock_light|night_light|screen_off|screen_toggle|ha_event|none";
+    /** gesture -> Settings.Global key holding its action */
+    static final java.util.Map<String, String> GESTURES = new java.util.LinkedHashMap<>();
+    static {
+        GESTURES.put("hold_up", "kioskclock_hold_volume_up");
+        GESTURES.put("hold_down", "kioskclock_hold_volume_down");
+        GESTURES.put("tap_single", "kioskclock_tap_single");
+        GESTURES.put("tap_double", "kioskclock_tap_double");
+    }
+
+    private final Runnable singleTap = () -> onTap("single");
     private long lastTap;
     private final boolean handleVolume;
-    private final String holdUp, holdDown;
+    private final String holdUp, holdDown, tapSingle, tapDouble;
 
     // state of the volume key currently held
     private String heldKey;
     private int volumeBefore = -1;
+    /** Stream the held key changes: the alarm stream while an alarm rings, else media. */
+    private int keyStream = AudioManager.STREAM_MUSIC;
     private boolean holdFired;
     private final Runnable holdCheck = this::onHold;
     private int lastLight = 5;
 
-    OemKeyReceiver(BridgeService svc, String holdUp, String holdDown) {
+    OemKeyReceiver(BridgeService svc, String holdUp, String holdDown, String tapSingle, String tapDouble) {
         this.svc = svc;
         this.holdUp = holdUp;
         this.holdDown = holdDown;
+        this.tapSingle = tapSingle;
+        this.tapDouble = tapDouble;
         handleVolume = !installed(svc, "com.google.assistant.core");
         Log.i(App.TAG, "volume buttons handled here: " + handleVolume + " (hold +: " + holdUp + ", hold -: " + holdDown + ")");
     }
@@ -80,7 +98,7 @@ public class OemKeyReceiver extends BroadcastReceiver {
             if (now - lastTap < DOUBLE_TAP_MS) {
                 handler.removeCallbacks(singleTap);
                 lastTap = 0;
-                emit("tap", "double");
+                onTap("double");
             } else {
                 lastTap = now;
                 handler.postDelayed(singleTap, DOUBLE_TAP_MS);
@@ -104,7 +122,8 @@ public class OemKeyReceiver extends BroadcastReceiver {
         if (key.equals(heldKey)) return;            // auto-repeat while held
         heldKey = key;
         holdFired = false;
-        volumeBefore = audio().getStreamVolume(AudioManager.STREAM_MUSIC);
+        keyStream = alarmPlaying() ? AudioManager.STREAM_ALARM : AudioManager.STREAM_MUSIC;
+        volumeBefore = audio().getStreamVolume(keyStream);
         stepVolume(VOL_UP.equals(key) ? 1 : -1);    // immediate feedback, undone if it becomes a hold
         handler.removeCallbacks(holdCheck);
         handler.postDelayed(holdCheck, HOLD_MS);
@@ -112,7 +131,7 @@ public class OemKeyReceiver extends BroadcastReceiver {
 
     private void onVolumeUp(String key) {
         handler.removeCallbacks(holdCheck);
-        if (!holdFired && key.equals(heldKey)) click();
+        if (!holdFired && key.equals(heldKey) && keyStream == AudioManager.STREAM_MUSIC) click();   // the alarm itself is the feedback
         heldKey = null;
     }
 
@@ -120,10 +139,47 @@ public class OemKeyReceiver extends BroadcastReceiver {
         if (heldKey == null) return;
         holdFired = true;
         if (volumeBefore >= 0) setVolume(volumeBefore);   // a hold is a shortcut, not a volume change
-        String action = VOL_UP.equals(heldKey)
-                ? live("kioskclock_hold_volume_up", holdUp) : live("kioskclock_hold_volume_down", holdDown);
-        emit("button", (VOL_UP.equals(heldKey) ? "hold_up" : "hold_down") + ":" + action);
+        String gesture = VOL_UP.equals(heldKey) ? "hold_up" : "hold_down";
+        String action = actionFor(gesture);
+        emit("button", gesture + ":" + action);
         runShortcut(action);
+    }
+
+    private void onTap(String kind) {
+        String action = actionFor("tap_" + kind);
+        emit("tap", kind);
+        runShortcut(action);
+    }
+
+    /** The action configured for a gesture: live setting, else the provision.json default. */
+    String actionFor(String gesture) {
+        switch (gesture) {
+            case "hold_up": return live(GESTURES.get(gesture), holdUp);
+            case "hold_down": return live(GESTURES.get(gesture), holdDown);
+            case "tap_single": return live(GESTURES.get(gesture), tapSingle);
+            case "tap_double": return live(GESTURES.get(gesture), tapDouble);
+            default: return null;
+        }
+    }
+
+    /**
+     * Runs a gesture's action as if the gesture happened on the clock (for Home Assistant). Not sent
+     * back to Home Assistant as an event, so an automation can't loop on it. False if unknown.
+     */
+    boolean runGesture(String gesture) {
+        String action = actionFor(gesture);
+        if (action == null) return false;
+        Log.i(App.TAG, "gesture " + gesture + " -> " + action + " (from Home Assistant)");
+        handler.post(() -> runShortcut(action));
+        return true;
+    }
+
+    /** Runs one action directly (for Home Assistant). False if unknown. */
+    boolean runAction(String action) {
+        if (action == null || !action.matches(ACTIONS)) return false;
+        Log.i(App.TAG, "action " + action + " (from Home Assistant)");
+        handler.post(() -> runShortcut(action));
+        return true;
     }
 
     /** Live override from Settings.Global (set via /api/settings), else the provision.json default. */
@@ -132,22 +188,35 @@ public class OemKeyReceiver extends BroadcastReceiver {
         return v == null || v.isEmpty() ? def : v;
     }
 
+    /** True while something plays with alarm usage (a ringing Kiosk Satellite alarm). */
+    private boolean alarmPlaying() {
+        try {
+            for (android.media.AudioPlaybackConfiguration c : audio().getActivePlaybackConfigurations()) {
+                if (c.getAudioAttributes().getUsage() == android.media.AudioAttributes.USAGE_ALARM) return true;
+            }
+        } catch (RuntimeException e) {
+            Log.w(App.TAG, "playback query failed: " + e);
+        }
+        return false;
+    }
+
     private void stepVolume(int dir) {
         AudioManager am = audio();
-        int max = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+        int max = am.getStreamMaxVolume(keyStream);
         int step = Math.max(1, Math.round(max / 15f));
-        setVolume(am.getStreamVolume(AudioManager.STREAM_MUSIC) + dir * step);
+        setVolume(am.getStreamVolume(keyStream) + dir * step);
     }
 
     private void setVolume(int v) {
         AudioManager am = audio();
-        int max = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-        int min = am.getStreamMinVolume(AudioManager.STREAM_MUSIC);
+        int stream = keyStream;
+        int max = am.getStreamMaxVolume(stream);
+        int min = am.getStreamMinVolume(stream);
         int next = Math.max(min, Math.min(max, v));
-        am.setStreamVolume(AudioManager.STREAM_MUSIC, next, 0);
+        am.setStreamVolume(stream, next, 0);
         int pct = max == 0 ? 0 : Math.round(next * 100f / max);
         svc.sendBroadcast(new Intent(ACTION_VOLUME).putExtra("percent", pct));
-        emit("volume", String.valueOf(pct));
+        emit(stream == AudioManager.STREAM_ALARM ? "alarm_volume" : "volume", String.valueOf(pct));
     }
 
     /** Short click on the media stream, so you hear the new level (stock media volume is silent). */
@@ -178,6 +247,14 @@ public class OemKeyReceiver extends BroadcastReceiver {
                 break;
             case "screen_off":
                 svc.sendBroadcast(new Intent("org.kioskclock.nav.SCREEN").setPackage("org.kioskclock.nav").putExtra("on", false));
+                break;
+            case "alarm_snooze":   // a ringing Kiosk Satellite alarm; KioskNav presses its button (no-op otherwise)
+            case "alarm_stop":
+                svc.sendBroadcast(new Intent("org.kioskclock.nav.ALARM").setPackage("org.kioskclock.nav")
+                        .putExtra("cmd", action.substring(6)), "org.kioskclock.permission.CONTROL");
+                break;
+            case "screen_toggle":   // black screen <-> on; a tap on top can wake it again
+                svc.sendBroadcast(new Intent("org.kioskclock.nav.SCREEN").setPackage("org.kioskclock.nav").putExtra("toggle", true));
                 break;
             case "play_pause": {   // whatever is playing on the clock (Kiosk media player, Music Assistant, …)
                 AudioManager am = audio();

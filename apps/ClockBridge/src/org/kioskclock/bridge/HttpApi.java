@@ -22,7 +22,14 @@ import java.util.Map;
  *   POST /api/update/check      -> check GitHub for a newer Kiosk Satellite now
  *   POST /api/screen/off|on     -> KioskNav black screen (backlight 0) / wake
  *   GET  /api/settings          -> the kioskclock_* settings below
- *   POST /api/settings?key=K&value=V  -> change one (whitelisted keys, validated values; applies live)
+ *   POST /api/settings?key=K&value=V  -> change one (whitelisted keys, validated values; applies live;
+ *                                        value=default resets the key)
+ *   GET  /api/info              -> {"id":..,"name":..,"model":..,"version":..,"api":..} (device identity)
+ *   GET  /api/webhook           -> {"url":..} (null when not set)
+ *   POST /api/webhook?url=U     -> set the event webhook (empty url clears it); used by the HA integration
+ *   POST /api/gesture?name=G    -> run the action set for gesture G (hold_up, hold_down, tap_single, tap_double)
+ *   POST /api/action?name=A     -> run action A directly (voice, play_pause, mute, dock_light, night_light,
+ *                                  screen_off, screen_toggle, ha_event, none)
  * One request per connection, small bodies only, 5 s socket timeout.
  */
 final class HttpApi extends Thread {
@@ -32,8 +39,7 @@ final class HttpApi extends Thread {
         SETTINGS.put("kioskclock_mic_indicator", java.util.regex.Pattern.compile("dot|dot_quiet|google|pill|edge|banner|hidden"));
         SETTINGS.put("kioskclock_mic_color", java.util.regex.Pattern.compile("#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})"));
         SETTINGS.put("kioskclock_mic_size", java.util.regex.Pattern.compile("[0-9]{1,2}"));
-        SETTINGS.put("kioskclock_hold_volume_up", java.util.regex.Pattern.compile("voice|dock_light|screen_off|none"));
-        SETTINGS.put("kioskclock_hold_volume_down", java.util.regex.Pattern.compile("voice|dock_light|screen_off|none"));
+        for (String key : OemKeyReceiver.GESTURES.values()) SETTINGS.put(key, java.util.regex.Pattern.compile(OemKeyReceiver.ACTIONS));
     }
 
     private final BridgeService svc;
@@ -129,9 +135,42 @@ final class HttpApi extends Thread {
             String key = params.get("key"), value = params.get("value");
             java.util.regex.Pattern allowed = key == null ? null : SETTINGS.get(key);
             if (allowed == null) { reply(c, 400, "{\"error\":\"unknown key\",\"keys\":\"" + SETTINGS.keySet() + "\"}"); return; }
+            if ("default".equals(value)) {   // back to the clock's default
+                android.provider.Settings.Global.putString(svc.getContentResolver(), key, null);
+                reply(c, 200, "{\"" + key + "\":null}");
+                return;
+            }
             if (value == null || !allowed.matcher(value).matches()) { reply(c, 400, "{\"error\":\"invalid value\",\"allowed\":\"" + esc(allowed.pattern()) + "\"}"); return; }
             android.provider.Settings.Global.putString(svc.getContentResolver(), key, value);
             reply(c, 200, "{\"" + key + "\":\"" + esc(value) + "\"}");
+        } else if (method.equals("GET") && path.equals("/api/info")) {
+            reply(c, 200, "{\"id\":\"" + esc(deviceId(svc)) + "\",\"name\":\"" + esc(deviceName(svc))
+                    + "\",\"model\":\"" + esc(android.os.Build.MODEL) + "\",\"version\":\"" + esc(bridgeVersion(svc))
+                    + "\",\"api\":" + Discovery.API_REVISION + "}");
+        } else if (method.equals("GET") && path.equals("/api/webhook")) {
+            String u = svc.webhook.url();
+            reply(c, 200, "{\"url\":" + (u == null ? "null" : "\"" + esc(u) + "\"") + "}");
+        } else if (method.equals("POST") && path.equals("/api/webhook")) {
+            String u = params.get("url");
+            if (u != null && !u.isEmpty() && !u.startsWith("http://") && !u.startsWith("https://")) {
+                reply(c, 400, "{\"error\":\"url must start with http:// or https://\"}"); return;
+            }
+            svc.webhook.setUrl(u);
+            Log.i(App.TAG, u == null || u.isEmpty() ? "webhook cleared over HTTP" : "webhook set over HTTP");
+            reply(c, 200, "{\"url\":" + (u == null || u.isEmpty() ? "null" : "\"" + esc(u) + "\"") + "}");
+        } else if (method.equals("POST") && (path.equals("/api/gesture") || path.equals("/api/action"))) {
+            OemKeyReceiver keys = svc.oemKeys;
+            String name = params.get("name");
+            boolean gesture = path.equals("/api/gesture");
+            if (keys == null) { reply(c, 503, "{\"error\":\"not ready\"}"); return; }
+            boolean ok = gesture ? keys.runGesture(name) : keys.runAction(name);
+            if (!ok) {
+                reply(c, 400, "{\"error\":\"unknown " + (gesture ? "gesture" : "action") + "\",\"allowed\":\""
+                        + (gesture ? String.join("|", OemKeyReceiver.GESTURES.keySet()) : OemKeyReceiver.ACTIONS) + "\"}");
+                return;
+            }
+            reply(c, 200, "{\"" + (gesture ? "gesture" : "action") + "\":\"" + esc(name) + "\""
+                    + (gesture ? ",\"action\":\"" + esc(String.valueOf(keys.actionFor(name))) + "\"" : "") + "}");
         } else if (method.equals("POST") && path.equals("/api/update/check")) {
             svc.checkUpdateAsync();
             reply(c, 200, "{\"started\":true}");
@@ -145,6 +184,23 @@ final class HttpApi extends Thread {
         byte[] given = header.substring(7).trim().getBytes(StandardCharsets.UTF_8);
         byte[] expected = svc.token().getBytes(StandardCharsets.UTF_8);
         return MessageDigest.isEqual(given, expected);
+    }
+
+    /** Stable per-device id (ANDROID_ID), used by Home Assistant as the device's unique id. */
+    static String deviceId(android.content.Context ctx) {
+        String id = android.provider.Settings.Secure.getString(ctx.getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
+        return id == null ? "unknown" : id;
+    }
+
+    /** Human name for discovery: "Smart Clock 2 ABCD" (last four id characters, to tell clocks apart). */
+    static String deviceName(android.content.Context ctx) {
+        String id = deviceId(ctx);
+        return "Smart Clock 2 " + id.substring(Math.max(0, id.length() - 4)).toUpperCase(java.util.Locale.ROOT);
+    }
+
+    static String bridgeVersion(android.content.Context ctx) {
+        try { return ctx.getPackageManager().getPackageInfo(ctx.getPackageName(), 0).versionName; }
+        catch (Exception e) { return "unknown"; }
     }
 
     static String dockJson(ChargeBase.Status s) {

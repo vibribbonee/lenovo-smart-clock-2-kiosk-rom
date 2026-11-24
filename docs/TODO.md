@@ -11,7 +11,7 @@
 - [ ] **Volume:** the scale is 0–100, so step ~6–8 per press; show a small volume bar (KioskNav).
 - [ ] **Brightness and auto-brightness:** find the backlight path (Google apps drove it on stock); light sensor exists (sensor handle 5); manual slider + auto mode.
 - [ ] **Mic mute switch:** verify it's detected on the ROM and that Kiosk Satellite follows it.
-- [ ] **Tap to snooze:** retest without Assistant; fix if the driver needs enabling.
+- [x] **Tap to snooze:** taps are reported reliably on the ROM (no Assistant). Tap = snooze, double tap = stop a ringing Kiosk Satellite alarm (KioskNav presses its buttons); configurable like the holds.
 
 ## C. Verify on the ROM (test plan)
 - [ ] Voice works after a reboot (ClockBridge anchor wins the race now that it's persistent).

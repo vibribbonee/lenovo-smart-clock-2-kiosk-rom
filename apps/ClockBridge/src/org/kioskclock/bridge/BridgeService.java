@@ -28,11 +28,12 @@ public class BridgeService extends Service {
     volatile ChargeBase.Status lastStatus = new ChargeBase.Status();
     private MicAnchor anchor;
     private HttpApi http;
+    private Discovery discovery;
     private Thread poller;
     KioskUpdater updater;
     private Thread updaterThread;
     final Webhook webhook = new Webhook(this);
-    private OemKeyReceiver oemKeys;
+    OemKeyReceiver oemKeys;
     private OemBridge oem;
     /** Mic switch position from the OEM service; null until it has reported. */
     volatile Boolean micMuted;
@@ -44,8 +45,11 @@ public class BridgeService extends Service {
         return createDeviceProtectedStorageContext().getSharedPreferences("bridge", Context.MODE_PRIVATE);
     }
 
-    String token() {
-        SharedPreferences p = prefs();
+    String token() { return token(this); }
+
+    /** The API token, generated on first use. Static so ControlReceiver can read it without the service. */
+    static synchronized String token(Context ctx) {
+        SharedPreferences p = ctx.createDeviceProtectedStorageContext().getSharedPreferences("bridge", Context.MODE_PRIVATE);
         String t = p.getString("token", null);
         if (t == null) {
             byte[] b = new byte[16];
@@ -93,7 +97,9 @@ public class BridgeService extends Service {
         org.json.JSONObject buttons = Provisioner.config() == null ? null : Provisioner.config().optJSONObject("buttons");
         oemKeys = new OemKeyReceiver(this,
                 buttons == null ? "voice" : buttons.optString("hold_volume_up", "voice"),
-                buttons == null ? "dock_light" : buttons.optString("hold_volume_down", "dock_light"));
+                buttons == null ? "dock_light" : buttons.optString("hold_volume_down", "dock_light"),
+                buttons == null ? "alarm_snooze" : buttons.optString("tap_single", "alarm_snooze"),
+                buttons == null ? "alarm_stop" : buttons.optString("tap_double", "alarm_stop"));
         registerReceiver(oemKeys, oemKeys.filter());
         oem = new OemBridge(this, this::onMicState);
         oem.start();
@@ -109,6 +115,8 @@ public class BridgeService extends Service {
         token();
         http = new HttpApi(this, HTTP_PORT);
         http.start();
+        discovery = new Discovery(this, HTTP_PORT);
+        discovery.start();
     }
 
     /**
@@ -184,6 +192,7 @@ public class BridgeService extends Service {
         if (oemKeys != null) unregisterReceiver(oemKeys);
         if (oem != null) oem.stop();
         if (anchor != null) anchor.stop();
+        if (discovery != null) discovery.stop();
         if (http != null) http.shutdown();
         if (poller != null) poller.interrupt();
         if (updaterThread != null) updaterThread.interrupt();

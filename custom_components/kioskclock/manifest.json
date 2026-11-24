@@ -1,0 +1,14 @@
+{
+  "domain": "kioskclock",
+  "name": "Kiosk Clock (Lenovo Smart Clock 2)",
+  "codeowners": ["@vibribbonee"],
+  "config_flow": true,
+  "dependencies": ["webhook"],
+  "documentation": "https://github.com/vibribbonee/lenovo-smart-clock-2-kiosk-rom/blob/main/docs/HOME_ASSISTANT.md",
+  "integration_type": "device",
+  "iot_class": "local_push",
+  "issue_tracker": "https://github.com/vibribbonee/lenovo-smart-clock-2-kiosk-rom/issues",
+  "requirements": [],
+  "version": "0.1.0",
+  "zeroconf": ["_kioskclock._tcp.local."]
+}

@@ -15,8 +15,8 @@ Built from stock firmware **1.2.2.627** and running daily on a real clock (Kiosk
 | **Voice that works** | ClockBridge holds the mic at 48 kHz stereo from early boot, working around a MediaTek MT8167 capture bug ([details](docs/PERFORMANCE_BASELINE.md)) |
 | **Navigation** | swipe up from the bottom edge: Back · Home (the firmware has no SystemUI) |
 | **Quick settings** | swipe down from the top edge: brightness + Auto, volume, dock light, Wi‑Fi, Bluetooth, Night light, screen off (tap to wake), restart, Settings (tap: clock settings, hold: Android Settings) |
-| **Hardware** | volume keys with click; hold Vol+ / Vol− for a shortcut of your choice (voice assistant, play/pause, mute, dock light, night light, screen off, or just an HA event); mic‑switch indicator (several styles); tap‑on‑top and dock events |
-| **Home Assistant** | HTTP API + webhook events for dock light, phone charging, screen, settings — [docs/HOME_ASSISTANT.md](docs/HOME_ASSISTANT.md) |
+| **Hardware** | volume keys with click (they set the alarm volume while one rings); a firm tap on top snoozes a ringing alarm, a double tap stops it (like stock); hold Vol+ / Vol− and both taps can each be set to a shortcut (voice assistant, play/pause, mute, dock light, night light, screen off/toggle, alarm snooze/stop, or just an HA event); mic‑switch indicator (several styles); dock events |
+| **Home Assistant** | **Kiosk Clock integration** (HACS): the clock is discovered automatically; dock light, phone charging, mic switch, screen, settings and tap/button triggers as entities, no YAML — [docs/HOME_ASSISTANT.md](docs/HOME_ASSISTANT.md) |
 | **Out of the box** | first boot after flash/reset sets home app, keyboard, nav bar, disables leftovers, no screen timeout — no Google setup |
 
 ## Architecture
@@ -53,6 +53,9 @@ This repository ships **no Lenovo or Google binaries**: they're copyrighted and 
 - **Firmware** comes from *your* clock: `./clockrom.sh backup` dumps it, and the ROM is built from that dump. The backup is also your way back to stock, so it's step one anyway. Keep it private — it holds your clock's serial, MAC addresses and calibration data.
 - **Google WebView**: the clock's own WebView is Chromium 74 (2019), too old for current Home Assistant dashboards. Download Android System WebView from **[APKMirror](https://www.apkmirror.com/apk/google-inc/android-system-webview/)**: latest **stable** release (not Beta/Dev/Canary) → variant **armeabi‑v7a**, **nodpi**, minimum Android ≤ 10 → the plain **.apk** (not an `.apkm` bundle, not Trichrome). Pass it with `--webview FILE`. The script refuses a wrong variant or a file not signed by Google. Already have a newer WebView on the clock? `--webview-from-device` pulls it over adb. `--no-webview` keeps WebView 74.
 
+## Home Assistant
+Install the **Kiosk Clock** integration from this repository with HACS (*Custom repositories* → this repo's URL, type *Integration*), restart HA, and the clock appears under *Discovered*. Enter the API token shown on the clock (quick panel → **Clock** → **Show token**) and you get the dock light, phone and mic switch sensors, screen buttons, settings and tap/button triggers. Details and the YAML fallback: [docs/HOME_ASSISTANT.md](docs/HOME_ASSISTANT.md).
+
 ## Documentation
 | Doc | Content |
 |---|---|
@@ -63,7 +66,7 @@ This repository ships **no Lenovo or Google binaries**: they're copyrighted and 
 | [DOCK](docs/DOCK.md) | Dock protocol, decoded `charge_base` codes, hardware key events |
 | [PERFORMANCE_BASELINE](docs/PERFORMANCE_BASELINE.md) | CPU, memory and the MT8167 mic bug |
 | [STAGE2_RESULTS](docs/STAGE2_RESULTS.md), [ROM1_FIRST_BOOT](docs/ROM1_FIRST_BOOT.md), [TODO](docs/TODO.md) | Test results and open items |
-| [HOME_ASSISTANT](docs/HOME_ASSISTANT.md) | API, settings, HA configuration examples |
+| [HOME_ASSISTANT](docs/HOME_ASSISTANT.md) | Kiosk Clock integration (HACS), API, settings, YAML fallback |
 | [SECURITY_NOTES](docs/SECURITY_NOTES.md) | Notes on third-party root tooling |
 | [IMPLEMENTATION_PLAN](docs/IMPLEMENTATION_PLAN.md), [TEST_PLAN](docs/TEST_PLAN.md) | Plan and test checklist |
 

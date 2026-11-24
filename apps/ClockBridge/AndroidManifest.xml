@@ -4,14 +4,14 @@
   - Mic anchor: holds the microphone at 48 kHz stereo so the MT8167 audio HAL stream is created
     in its clean native format before any voice app opens it (see docs/PERFORMANCE_BASELINE.md).
   - Dock: night light + phone charging state via Lenovo's charge_base service (whitelisted calls only).
-  - Small token-protected HTTP API for Home Assistant.
+  - Small token-protected HTTP API for Home Assistant, advertised via mDNS as _kioskclock._tcp.
   - One-time first-boot provisioning (enables KioskNav) when WRITE_SECURE_SETTINGS is held.
   In the ROM it lives in /product/priv-app and is persistent, so Android starts it before the HOME app.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.kioskclock.bridge"
-    android:versionCode="9"
-    android:versionName="0.8.1">
+    android:versionCode="10"
+    android:versionName="0.9.0">
 
     <uses-sdk android:minSdkVersion="29" android:targetSdkVersion="29" />
 

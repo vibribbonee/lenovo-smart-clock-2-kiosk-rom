@@ -30,13 +30,18 @@ final class ClockSettings {
     private static final String[][] COLOR = {{"#D93025", "Red"}, {"#F29900", "Amber"}, {"#FFFFFF", "White"},
             {"#66FFFFFF", "Dim"}};
     private static final String[][] SIZE = {{"10", "Small"}, {null, "Default"}, {"22", "Large"}};
-    private static final String[][] HOLD = {{"voice", "Voice assistant"}, {"dock_light", "Dock light"},
-            {"screen_off", "Screen off"}, {"none", "Nothing"}};
+    private static final String[][] HOLD = {{"alarm_snooze", "Snooze alarm"}, {"alarm_stop", "Stop alarm"},
+            {"voice", "Voice assistant"}, {"play_pause", "Play / pause"},
+            {"mute", "Mute speaker"}, {"dock_light", "Dock light"}, {"night_light", "Night light"},
+            {"screen_off", "Screen off"}, {"screen_toggle", "Screen on / off"}, {"ha_event", "Home Assistant only"},
+            {"none", "Nothing"}};
 
     private final Context ctx;
     private final WindowManager wm;
     private ScrollView scroll;
     private LinearLayout list;
+    /** API token shown after "Show token" (fetched from ClockBridge); cleared when the screen closes. */
+    private String token;
 
     ClockSettings(Context ctx) { this.ctx = ctx; this.wm = ctx.getSystemService(WindowManager.class); }
 
@@ -62,6 +67,7 @@ final class ClockSettings {
         if (scroll == null) return;
         wm.removeView(scroll);
         scroll = null;
+        token = null;
     }
 
     private void build() {
@@ -80,16 +86,69 @@ final class ClockSettings {
         chips("kioskclock_hold_volume_up", HOLD, "voice");
         section("Hold volume −", null);
         chips("kioskclock_hold_volume_down", HOLD, "dock_light");
+        section("Tap on top", "A firm tap on the top of the clock");
+        chips("kioskclock_tap_single", HOLD, "alarm_snooze");
+        section("Double tap on top", null);
+        chips("kioskclock_tap_double", HOLD, "alarm_stop");
 
         String ip = ipAddress();
-        section("Home Assistant", "ClockBridge API: http://" + (ip == null ? "<clock-ip>" : ip) + ":8765\n"
-                + "Set up once in HA (rest + rest_command), see docs/HOME_ASSISTANT.md. The same settings are available there.");
+        section("Home Assistant", "Install the Kiosk Clock integration (HACS). The clock is found automatically;"
+                + " otherwise add it by address: " + (ip == null ? "<clock-ip>" : ip) + " (port 8765).\n"
+                + "HA asks for the API token once.");
+        if (token == null) {
+            TextView show = chip("Show token", false);
+            show.setOnClickListener(v -> requestToken());
+            LinearLayout r = new LinearLayout(ctx);
+            r.addView(show);
+            list.addView(r);
+        } else {
+            TextView t = text(group(token), 20, Color.WHITE);
+            t.setTypeface(android.graphics.Typeface.MONOSPACE);
+            t.setPadding(0, 4, 0, 0);
+            list.addView(t);
+        }
         TextView done = chip("Done", true);
         done.setOnClickListener(v -> hide());
         LinearLayout row = new LinearLayout(ctx);
         row.setPadding(0, 24, 0, 0);
         row.addView(done);
         list.addView(row);
+    }
+
+    /** Asks ClockBridge for the token (ordered broadcast; both apps hold the signature permission). */
+    private void requestToken() {
+        android.content.Intent i = new android.content.Intent(QuickPanel.CONTROL).setPackage("org.kioskclock.bridge")
+                .putExtra("cmd", "token");
+        ctx.sendOrderedBroadcast(i, "org.kioskclock.permission.CONTROL", new TokenResult(this), null, 0, null, null);
+    }
+
+    private void onToken(String t) {
+        if (scroll == null) return;
+        if (t == null || t.isEmpty()) {
+            Toast.makeText(ctx, "ClockBridge did not answer (update the ROM)", Toast.LENGTH_LONG).show();
+            return;
+        }
+        token = t;
+        int y = scroll.getScrollY();
+        build();
+        list.post(() -> scroll.scrollTo(0, y));
+    }
+
+    /** Groups of four for reading off the screen; the HA integration ignores the spaces. */
+    private static String group(String t) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < t.length(); i += 4) {
+            if (i > 0) sb.append(i % 16 == 0 ? '\n' : ' ');
+            sb.append(t, i, Math.min(t.length(), i + 4));
+        }
+        return sb.toString();
+    }
+
+    private static final class TokenResult extends android.content.BroadcastReceiver {
+        private final ClockSettings owner;
+        TokenResult(ClockSettings owner) { this.owner = owner; }
+        @Override
+        public void onReceive(Context c, android.content.Intent i) { owner.onToken(getResultData()); }
     }
 
     private void section(String name, String hint) {
