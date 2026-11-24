@@ -18,3 +18,5 @@ keys/
 out/
 tools/
 apk-test/
+__pycache__/
+*.pyc
