@@ -14,6 +14,7 @@ from . import KioskClockConfigEntry
 from .api import KioskClockError
 from .const import (
     DEFAULT_VALUE,
+    DOUBLE_TAP_SPEEDS,
     GESTURE_ACTIONS,
     MIC_COLORS,
     MIC_INDICATORS,
@@ -23,6 +24,7 @@ from .const import (
     SETTING_MIC_COLOR,
     SETTING_MIC_INDICATOR,
     SETTING_MIC_SIZE,
+    SETTING_DOUBLE_TAP_MS,
     SETTING_TAP_DOUBLE,
     SETTING_TAP_SINGLE,
 )
@@ -60,6 +62,9 @@ SELECTS = (
     ),
     ClockSelectDescription(
         key="tap_double", setting=SETTING_TAP_DOUBLE, values=_identity(GESTURE_ACTIONS), default_option="alarm_stop"
+    ),
+    ClockSelectDescription(
+        key="double_tap_speed", setting=SETTING_DOUBLE_TAP_MS, values=dict(DOUBLE_TAP_SPEEDS), default_option="normal"
     ),
 )
 

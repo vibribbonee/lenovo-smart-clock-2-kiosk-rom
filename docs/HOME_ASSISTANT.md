@@ -88,6 +88,7 @@ Settings (`/api/settings`):
 | `kioskclock_hold_volume_down` | same | `dock_light` |
 | `kioskclock_tap_single` | same (0.9.0+) | `alarm_snooze` |
 | `kioskclock_tap_double` | same (0.9.0+) | `alarm_stop` |
+| `kioskclock_double_tap_ms` | 300–900: how soon the second tap must follow (Fast 300, Relaxed 700); a single tap waits this long (0.9.1+) | 450 |
 
 ## configuration.yaml example (fallback)
 ```yaml

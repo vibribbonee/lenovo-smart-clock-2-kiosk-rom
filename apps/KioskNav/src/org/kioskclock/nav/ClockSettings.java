@@ -30,6 +30,7 @@ final class ClockSettings {
     private static final String[][] COLOR = {{"#D93025", "Red"}, {"#F29900", "Amber"}, {"#FFFFFF", "White"},
             {"#66FFFFFF", "Dim"}};
     private static final String[][] SIZE = {{"10", "Small"}, {null, "Default"}, {"22", "Large"}};
+    private static final String[][] TAP_SPEED = {{"300", "Fast"}, {null, "Normal"}, {"700", "Relaxed"}};
     private static final String[][] HOLD = {{"alarm_snooze", "Snooze alarm"}, {"alarm_stop", "Stop alarm"},
             {"voice", "Voice assistant"}, {"play_pause", "Play / pause"},
             {"mute", "Mute speaker"}, {"dock_light", "Dock light"}, {"night_light", "Night light"},
@@ -90,6 +91,8 @@ final class ClockSettings {
         chips("kioskclock_tap_single", HOLD, "alarm_snooze");
         section("Double tap on top", null);
         chips("kioskclock_tap_double", HOLD, "alarm_stop");
+        section("Double-tap speed", "How quickly the second tap must follow. Relaxed is easier, but a single tap then waits longer to act.");
+        chips("kioskclock_double_tap_ms", TAP_SPEED, null);
 
         String ip = ipAddress();
         section("Home Assistant", "Install the Kiosk Clock integration (HACS). The clock is found automatically;"

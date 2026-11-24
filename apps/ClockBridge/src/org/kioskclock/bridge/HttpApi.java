@@ -40,6 +40,7 @@ final class HttpApi extends Thread {
         SETTINGS.put("kioskclock_mic_color", java.util.regex.Pattern.compile("#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})"));
         SETTINGS.put("kioskclock_mic_size", java.util.regex.Pattern.compile("[0-9]{1,2}"));
         for (String key : OemKeyReceiver.GESTURES.values()) SETTINGS.put(key, java.util.regex.Pattern.compile(OemKeyReceiver.ACTIONS));
+        SETTINGS.put(OemKeyReceiver.SETTING_DOUBLE_TAP, java.util.regex.Pattern.compile("[3-8][0-9]{2}|900"));
     }
 
     private final BridgeService svc;

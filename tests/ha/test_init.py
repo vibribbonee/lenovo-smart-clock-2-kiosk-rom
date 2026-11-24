@@ -53,6 +53,7 @@ async def test_setup_and_entities(hass: HomeAssistant, mock_clock: AiohttpClient
     assert hass.states.get("select.smart_clock_2_ab12_hold_volume_down").state == "ha_event"
     assert hass.states.get("select.smart_clock_2_ab12_tap_on_top").state == "alarm_snooze"  # unset = default
     assert hass.states.get("select.smart_clock_2_ab12_double_tap_on_top").state == "screen_toggle"
+    assert hass.states.get("select.smart_clock_2_ab12_double_tap_speed").state == "relaxed"
     assert hass.states.get("sensor.smart_clock_2_ab12_kiosk_satellite_version").state == "2026.11.29"
 
     device = _device(hass)

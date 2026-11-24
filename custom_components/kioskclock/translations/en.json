@@ -193,6 +193,14 @@
           "ha_event": "Home Assistant only",
           "none": "Nothing"
         }
+      },
+      "double_tap_speed": {
+        "name": "Double-tap speed",
+        "state": {
+          "fast": "Fast",
+          "normal": "Normal",
+          "relaxed": "Relaxed"
+        }
       }
     },
     "sensor": {

@@ -39,7 +39,18 @@ public class OemKeyReceiver extends BroadcastReceiver {
     static final String ACTION_VOLUME = "org.kioskclock.bridge.VOLUME";
     /** For KioskNav's panel: extra "muted" (boolean) when the switch state is known. */
     static final String ACTION_MIC = "org.kioskclock.bridge.MIC";
-    private static final long DOUBLE_TAP_MS = 450;
+    /** Window for the second tap of a double tap; kioskclock_double_tap_ms overrides it (300..900). */
+    static final long DOUBLE_TAP_MS = 450;
+    static final String SETTING_DOUBLE_TAP = "kioskclock_double_tap_ms";
+
+    private long doubleTapMs() {
+        try {
+            long v = Long.parseLong(live(SETTING_DOUBLE_TAP, String.valueOf(DOUBLE_TAP_MS)));
+            return Math.max(300, Math.min(900, v));
+        } catch (NumberFormatException e) {
+            return DOUBLE_TAP_MS;
+        }
+    }
     private static final long HOLD_MS = 700;
 
     private final BridgeService svc;
@@ -95,13 +106,14 @@ public class OemKeyReceiver extends BroadcastReceiver {
         String a = intent.getAction();
         if (TAP.equals(a)) {
             long now = SystemClock.uptimeMillis();
-            if (now - lastTap < DOUBLE_TAP_MS) {
+            long window = doubleTapMs();
+            if (now - lastTap < window) {
                 handler.removeCallbacks(singleTap);
                 lastTap = 0;
                 onTap("double");
             } else {
                 lastTap = now;
-                handler.postDelayed(singleTap, DOUBLE_TAP_MS);
+                handler.postDelayed(singleTap, window);
             }
         } else if (DOCK_IN.equals(a)) {
             emit("dock", "attached");

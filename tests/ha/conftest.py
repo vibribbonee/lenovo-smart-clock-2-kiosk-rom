@@ -35,6 +35,7 @@ SETTINGS = {
     "kioskclock_mic_indicator": "pill", "kioskclock_mic_color": "#F29900", "kioskclock_mic_size": None,
     "kioskclock_hold_volume_up": None, "kioskclock_hold_volume_down": "ha_event",
     "kioskclock_tap_single": None, "kioskclock_tap_double": "screen_toggle",
+    "kioskclock_double_tap_ms": "700",
 }
 
 
