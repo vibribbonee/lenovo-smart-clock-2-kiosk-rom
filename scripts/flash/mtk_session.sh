@@ -4,13 +4,14 @@
 #
 #   sudo I_AM_AT_THE_CLOCK=yes scripts/flash/mtk_session.sh rehearsal   # write logo back with its own bytes, re-read
 #   sudo I_AM_AT_THE_CLOCK=yes scripts/flash/mtk_session.sh flash       # erase data, unlock, write super + vbmeta_system
+#   sudo I_AM_AT_THE_CLOCK=yes scripts/flash/mtk_session.sh update      # already unlocked: write super + vbmeta_system, keep data
 #   sudo I_AM_AT_THE_CLOCK=yes scripts/flash/mtk_session.sh disable-verity   # fallback: stock vbmeta with verification off
 #   sudo I_AM_AT_THE_CLOCK=yes scripts/flash/mtk_session.sh restore-stock    # stock super, vbmeta, vbmeta_system back
 #
 # Every input file is checked against its recorded SHA-256 before mtkclient starts.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"; cd "$ROOT"
-MODE="${1:?mode: rehearsal | flash | disable-verity | restore-stock}"
+MODE="${1:?mode: rehearsal | flash | update | disable-verity | restore-stock}"
 [ "${I_AM_AT_THE_CLOCK:-}" = "yes" ] || { echo "Set I_AM_AT_THE_CLOCK=yes (see docs/FLASHING.md)"; exit 1; }
 MTK=/opt/homebrew/bin/mtk
 BK="$ROOT/backups/20261123-233949-1.2.2.627"
@@ -40,6 +41,10 @@ case "$MODE" in
     want_build super.img; want_build vbmeta_system.part.img
     printf 'e metadata,userdata,md_udc\nda seccfg unlock\nw super %s\nw vbmeta_system %s\nreset\n' \
       "$W/super.img" "$W/vbmeta_system.part.img" > "$S" ;;
+  update)
+    # Already unlocked: write only super + vbmeta_system. No erase, no seccfg change; /data is kept.
+    want_build super.img; want_build vbmeta_system.part.img
+    printf 'w super %s\nw vbmeta_system %s\nreset\n' "$W/super.img" "$W/vbmeta_system.part.img" > "$S" ;;
   disable-verity)
     want_build vbmeta_disabled.img
     printf 'w vbmeta %s\nreset\n' "$W/vbmeta_disabled.img" > "$S" ;;
