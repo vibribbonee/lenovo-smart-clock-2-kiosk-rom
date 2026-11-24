@@ -44,7 +44,7 @@ Actions: `alarm_snooze` / `alarm_stop` (a ringing Kiosk Satellite alarm, like Le
 Snooze/stop works offline: KioskNav presses the alarm screen's own Snooze / Stop button. While an alarm rings, Vol ± change the alarm's volume instead of media.
 
 ## Wake-up light
-Fades light in over the minutes before the next Kiosk Satellite alarm (ClockBridge 0.9.1+). ClockBridge keeps the schedule (Android's next alarm, which Kiosk sets), so the dock light works without Home Assistant.
+Fades light in over the minutes before the next Kiosk Satellite alarm (ClockBridge 0.9.2+). ClockBridge keeps the schedule (Android's next alarm, which Kiosk sets), so the dock light works without Home Assistant.
 - **What:** `select.…_wake_up_light`: *Off*, *Dock light*, *Home Assistant lights*, *Both* (also on the clock: quick panel → **Clock**).
 - **How long / how bright:** `number.…_wake_up_light_fade_length` (5–60 min, default 20) and `number.…_wake_up_light_dock_limit` (dock light level 1–10). The dock light has only 10 levels, so it steps up every few minutes.
 - **HA lights:** *Settings → Devices & services → Kiosk Clock → Configure*: pick the lights and their brightness at the alarm. They start at 1 % and fade smoothly (transitions where the light supports them).
@@ -96,9 +96,9 @@ Settings (`/api/settings`):
 | `kioskclock_hold_volume_down` | same | `dock_light` |
 | `kioskclock_tap_single` | same (0.9.0+) | `alarm_snooze` |
 | `kioskclock_tap_double` | same (0.9.0+) | `alarm_stop` |
-| `kioskclock_wake_light` | `off`, `dock`, `ha`, `both` (0.9.1+) | `off` |
-| `kioskclock_wake_minutes` | 5–60 (0.9.1+) | 20 |
-| `kioskclock_wake_max` | dock light limit 1–10 (0.9.1+) | 10 |
+| `kioskclock_wake_light` | `off`, `dock`, `ha`, `both` (0.9.2+) | `off` |
+| `kioskclock_wake_minutes` | 5–60 (0.9.2+) | 20 |
+| `kioskclock_wake_max` | dock light limit 1–10 (0.9.2+) | 10 |
 | `kioskclock_double_tap_ms` | 300–900: how soon the second tap must follow (Fast 300, Relaxed 700); a single tap waits this long (0.9.1+) | 450 |
 
 ## configuration.yaml example (fallback)

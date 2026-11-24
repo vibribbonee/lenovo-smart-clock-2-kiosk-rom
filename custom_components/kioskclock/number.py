@@ -40,7 +40,7 @@ async def async_setup_entry(
     hass: HomeAssistant, entry: KioskClockConfigEntry, async_add_entities: AddConfigEntryEntitiesCallback
 ) -> None:
     coordinator = entry.runtime_data.coordinator
-    # Wake-up light settings arrived with ClockBridge 0.9.1; older ones don't list them.
+    # Wake-up light settings arrived with ClockBridge 0.9.2; older ones don't list them.
     async_add_entities(ClockNumber(coordinator, d) for d in NUMBERS if d.setting in coordinator.data.settings)
 
 
