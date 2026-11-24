@@ -34,5 +34,10 @@
     "auto_time": "1",
     "stay_on_while_plugged_in": "7"
   },
-  "time_zone": "Europe/Amsterdam"
+  "time_zone": "Europe/Amsterdam",
+  "buttons": {
+    "_options": "voice (start Kiosk Satellite listening), dock_light (toggle), screen_off (black screen), none",
+    "hold_volume_up": "voice",
+    "hold_volume_down": "dock_light"
+  }
 }

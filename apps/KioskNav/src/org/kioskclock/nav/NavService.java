@@ -52,6 +52,8 @@ public class NavService extends AccessibilityService {
         panel = new QuickPanel(this);
         dockReceiver = new DockReceiver(panel);
         registerReceiver(dockReceiver, new android.content.IntentFilter(DockReceiver.ACTION));
+        micReceiver = new MicReceiver(panel);
+        registerReceiver(micReceiver, new android.content.IntentFilter(MicReceiver.ACTION));
         addTopStrip();
         blackout = new Blackout(this);
         screenReceiver = new ScreenReceiver(this);
@@ -68,6 +70,7 @@ public class NavService extends AccessibilityService {
 
     private QuickPanel panel;
     private DockReceiver dockReceiver;
+    private MicReceiver micReceiver;
     private View topStrip;
 
     /** Swipe down from the top edge opens the quick panel. */
@@ -247,6 +250,7 @@ public class NavService extends AccessibilityService {
         hideVolumeBar();
         if (volumeReceiver != null) unregisterReceiver(volumeReceiver);
         if (dockReceiver != null) unregisterReceiver(dockReceiver);
+        if (micReceiver != null) unregisterReceiver(micReceiver);
         if (screenReceiver != null) unregisterReceiver(screenReceiver);
         if (blackout != null) blackout.off();
         if (panel != null) panel.hide();

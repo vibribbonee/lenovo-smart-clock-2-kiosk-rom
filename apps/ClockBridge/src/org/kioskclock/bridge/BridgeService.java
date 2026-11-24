@@ -86,7 +86,10 @@ public class BridgeService extends Service {
 
         Provisioner.runOnce(this);
 
-        oemKeys = new OemKeyReceiver(this);
+        org.json.JSONObject buttons = Provisioner.config() == null ? null : Provisioner.config().optJSONObject("buttons");
+        oemKeys = new OemKeyReceiver(this,
+                buttons == null ? "voice" : buttons.optString("hold_volume_up", "voice"),
+                buttons == null ? "dock_light" : buttons.optString("hold_volume_down", "dock_light"));
         registerReceiver(oemKeys, oemKeys.filter());
 
         poller = new Thread(this::pollDock, "dock-poller");

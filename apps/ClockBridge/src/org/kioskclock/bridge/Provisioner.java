@@ -62,6 +62,9 @@ final class Provisioner {
         catch (Exception e) { Log.w(App.TAG, "provisioning step '" + name + "' failed: " + e); return 1; }
     }
 
+    /** The parsed provision.json (also used for the button shortcuts), or null. */
+    static JSONObject config() { return load(); }
+
     private static JSONObject load() {
         File f = new File(CONFIG);
         if (!f.isFile()) return null;

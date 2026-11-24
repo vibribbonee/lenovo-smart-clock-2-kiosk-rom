@@ -46,6 +46,8 @@ final class QuickPanel {
     private View lightRow;
     private TextView wifi, bt, night;
     private boolean shown;
+    private TextView status;
+    private Boolean micMuted;
 
     QuickPanel(NavService svc) {
         this.svc = svc;
@@ -111,6 +113,13 @@ final class QuickPanel {
         setTile(off, "\uD83C\uDF19", "Screen off", "Hold: restart", false);
         for (TextView t : new TextView[]{wifi, bt, night, off}) r4.addView(t, weight());
         root.addView(r4);
+
+        status = new TextView(svc);
+        status.setTextColor(0xFFBDC1C6);
+        status.setTextSize(13);
+        status.setPadding(8, 10, 8, 0);
+        status.setVisibility(View.GONE);
+        root.addView(status);
     }
 
     // ---- show / hide --------------------------------------------------------------------------
@@ -140,6 +149,14 @@ final class QuickPanel {
     private void restartTimer() {
         handler.removeCallbacks(hide);
         handler.postDelayed(hide, AUTO_HIDE_MS);
+    }
+
+    /** Hardware mic switch, from ClockBridge's org.kioskclock.bridge.MIC broadcast (null = unknown). */
+    void onMic(Boolean muted) {
+        micMuted = muted;
+        if (muted == null) { status.setVisibility(View.GONE); return; }
+        status.setText(muted ? "\uD83C\uDF99  Microphone muted (switch on the bottom)" : "\uD83C\uDF99  Microphone on");
+        status.setVisibility(View.VISIBLE);
     }
 
     /** Called with ClockBridge's org.kioskclock.bridge.DOCK_STATE broadcast. */
@@ -228,6 +245,10 @@ final class QuickPanel {
     private SeekBar slider(int max, IntConsumer onChange, IntConsumer onRelease) {
         SeekBar s = new SeekBar(svc);
         s.setMax(max);
+        // Taller touch target (the default ~32 px row is hard to hit on this 240 dpi panel).
+        s.setMinimumHeight(64);
+        s.setPadding(28, 22, 28, 22);
+        s.setScaleY(1.3f);
         s.setOnSeekBarChangeListener(new Seek(this, onChange, onRelease));
         return s;
     }

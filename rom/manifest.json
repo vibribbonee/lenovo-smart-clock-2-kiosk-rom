@@ -21,6 +21,26 @@
     {
       "path": "/app/com.google.assistant.launcher",
       "why": "Assistant home shim; Kiosk Satellite is the only HOME app."
+    },
+    {
+      "path": "/app/MtkBrowser",
+      "why": "Disabled on first boot since build 2 with no side effects; removed so it no longer appears in Settings."
+    },
+    {
+      "path": "/app/MtkCalendar",
+      "why": "Disabled on first boot since build 2 with no side effects; removed so it no longer appears in Settings."
+    },
+    {
+      "path": "/priv-app/MtkContacts",
+      "why": "Disabled on first boot since build 2 with no side effects; removed so it no longer appears in Settings."
+    },
+    {
+      "path": "/app/com.google.android.marvin.talkback",
+      "why": "Disabled on first boot since build 2 with no side effects; removed so it no longer appears in Settings."
+    },
+    {
+      "path": "/app/MtkWallpaperPicker",
+      "why": "Disabled on first boot since build 2 with no side effects; removed so it no longer appears in Settings."
     }
   ],
   "add": [
