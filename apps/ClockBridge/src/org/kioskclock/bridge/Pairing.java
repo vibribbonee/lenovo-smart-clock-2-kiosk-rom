@@ -11,20 +11,22 @@ import java.security.SecureRandom;
  * "Home Assistant wants to connect, code 1234 [Deny] [Allow]" (KioskNav), and once someone at the
  * clock taps Allow the asker gets the token from GET /api/pair?id=... exactly once.
  * One request at a time, 2 minutes to answer; only the request id the asker got can collect.
+ * After a Deny, new requests wait COOLDOWN_MS, so nobody on the network can keep popping the prompt.
  */
 final class Pairing {
-    static final long TTL_MS = 120_000;
+    static final long TTL_MS = 120_000, COOLDOWN_MS = 30_000;
     private static final SecureRandom RNG = new SecureRandom();
 
     private final BridgeService svc;
     private String id, code, state;     // state: pending | allowed | denied | done
-    private long created;
+    private long created, deniedAt = -COOLDOWN_MS;
 
     Pairing(BridgeService svc) { this.svc = svc; }
 
-    /** Starts a request; null while another one is still waiting for an answer. Returns {id, code}. */
+    /** Starts a request; null while another one is waiting or just after a Deny. Returns {id, code}. */
     synchronized String[] start(String asker) {
         if ("pending".equals(state) && !expired()) return null;
+        if (SystemClock.elapsedRealtime() - deniedAt < COOLDOWN_MS) return null;
         byte[] b = new byte[16];
         RNG.nextBytes(b);
         StringBuilder sb = new StringBuilder();
@@ -44,6 +46,7 @@ final class Pairing {
     synchronized void answer(String forId, boolean allow) {
         if (forId == null || !forId.equals(id) || !"pending".equals(state) || expired()) return;
         state = allow ? "allowed" : "denied";
+        if (!allow) deniedAt = SystemClock.elapsedRealtime();
         Log.i(App.TAG, "pairing " + (allow ? "allowed" : "denied") + " on the clock");
     }
 

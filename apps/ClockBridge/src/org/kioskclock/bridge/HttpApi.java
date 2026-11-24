@@ -112,7 +112,7 @@ final class HttpApi extends Thread {
             if (method.equals("POST")) {
                 String asker = params.get("name");
                 String[] r = svc.pairing.start(asker == null || asker.isEmpty() ? "Home Assistant" : asker);
-                if (r == null) { reply(c, 409, "{\"error\":\"another pairing is waiting on the clock\"}"); return; }
+                if (r == null) { reply(c, 409, "{\"error\":\"another pairing is waiting on the clock, or one was just denied\"}"); return; }
                 reply(c, 200, "{\"id\":\"" + r[0] + "\",\"code\":\"" + r[1] + "\",\"expires_in\":" + Pairing.TTL_MS / 1000 + "}");
             } else {
                 String[] r = svc.pairing.poll(params.get("id"));

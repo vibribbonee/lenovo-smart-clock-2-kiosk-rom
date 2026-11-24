@@ -65,7 +65,7 @@
       "reauth_successful": "Token updated.",
       "not_ipv4": "Only IPv4 discoveries are used.",
       "no_device_id": "The clock did not announce a device id.",
-      "pair_busy": "Another pairing request is still waiting on the clock. Answer it there (or wait 2 minutes) and try again.",
+      "pair_busy": "The clock is answering another pairing request, or one was just denied. Answer it on the clock or wait a minute, then try again.",
       "cannot_connect": "Can't reach the clock. Is it on and on the same network?",
       "invalid_auth": "The clock rejected the token it handed out; try again.",
       "unknown": "Unexpected answer from the clock; see the log."
