@@ -15,9 +15,9 @@ final class Discovery implements NsdManager.RegistrationListener {
     static final String SERVICE_TYPE = "_kioskclock._tcp";
     /**
      * Bumped when the HTTP API gains endpoints the integration may use
-     * (2 = /api/info, /api/webhook; 3 = /api/gesture, /api/action, tap settings).
+     * (2 = /api/info, /api/webhook; 3 = /api/gesture, /api/action, tap settings; 4 = /api/pair).
      */
-    static final String API_REVISION = "3";
+    static final String API_REVISION = "4";
 
     private final NsdManager nsd;
     private final NsdServiceInfo info = new NsdServiceInfo();

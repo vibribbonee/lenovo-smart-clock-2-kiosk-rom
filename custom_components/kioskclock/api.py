@@ -24,6 +24,10 @@ class NotSupported(KioskClockError):
     """The endpoint does not exist on this ClockBridge version (HTTP 404)."""
 
 
+class Busy(KioskClockError):
+    """Another pairing request is still waiting on the clock (HTTP 409)."""
+
+
 def clean_token(token: str) -> str:
     """The clock shows the token in groups of four; drop all whitespace."""
     return "".join(token.split())
@@ -50,6 +54,8 @@ class KioskClockApi:
                             raise InvalidAuth
                         if resp.status == 404:
                             raise NotSupported(path)
+                        if resp.status == 409:
+                            raise Busy(path)
                         try:
                             body = await resp.json(content_type=None)
                         except ValueError as err:
@@ -60,6 +66,14 @@ class KioskClockApi:
                         return body if isinstance(body, dict) else {}
             except (aiohttp.ClientError, TimeoutError) as err:
                 raise CannotConnect(f"{self.host}:{self.port}: {err!r}") from err
+
+    async def pair_start(self, name: str) -> dict[str, Any]:
+        """Ask the clock to pair (no token needed): {"id", "code"}; the person at the clock taps Allow."""
+        return await self._request("POST", "/api/pair", {"name": name})
+
+    async def pair_poll(self, pair_id: str) -> dict[str, Any]:
+        """{"state": pending|allowed|denied|expired|..., "token" once allowed}."""
+        return await self._request("GET", "/api/pair", {"id": pair_id})
 
     async def info(self) -> dict[str, Any]:
         """Device identity (ClockBridge 0.9.0+, NotSupported before)."""

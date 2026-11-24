@@ -8,7 +8,8 @@ The repo contains a Home Assistant custom integration, `kioskclock` ([custom_com
 1. **Install** with [HACS](https://hacs.xyz): HACS → ⋮ → *Custom repositories* → `https://github.com/vibribbonee/lenovo-smart-clock-2-kiosk-rom`, type *Integration* → download **Kiosk Clock** → restart Home Assistant.
    Without HACS: copy `custom_components/kioskclock` into your HA `config/custom_components/` folder and restart.
 2. **Add the clock.** HA finds it via mDNS (`_kioskclock._tcp`, ROM with ClockBridge 0.9.0 or newer) and offers it under *Settings → Devices & services → Discovered*. Click *Add*. Not discovered (other VLAN, older ROM)? *Add integration → Kiosk Clock* and enter the clock's IP address (shown on the clock under quick panel → **Clock**).
-3. **Token.** On the clock: swipe up from the bottom edge → quick panel → **Clock** → **Show token**, and type it into HA (the spaces don't matter). On older ROMs the token is only in the log (`adb logcat -d | grep "API token"`) or set your own (see *Token* below).
+3. **Pair.** Choose *Pair on the clock*: the clock shows *"Home Assistant wants to connect"* with a 4-digit code (HA shows the same code); tap **Allow** on the clock. Nothing to type (ClockBridge 0.9.3+).
+   Or choose *Enter the API token*: on the clock, quick panel → **Clock** → **Show token** (the spaces don't matter). On older ROMs the token is only in the log (`adb logcat -d | grep "API token"`) or set your own (see *Token* below).
 
 The integration then registers its own webhook on the clock (no `set_webhook` needed; ClockBridge 0.9.0+), polls every 15 s, and refreshes instantly when the clock reports a change.
 
@@ -79,6 +80,7 @@ Without the integration, HA talks to the API with `rest` / `rest_command` (examp
 | `POST /api/update/check` | check GitHub for a newer Kiosk Satellite now |
 | `GET /api/settings` | the settings below |
 | `POST /api/settings?key=K&value=V` | change one; applies live. `value=default` resets it (0.9.0+) |
+| `POST /api/pair?name=N` / `GET /api/pair?id=ID` | **no token needed**: start pairing (the clock asks its user to Allow, 2 min) / poll it; the token is returned once, after Allow (0.9.3+) |
 | `GET /api/info` | `{"id","name","model","version","api"}` device identity (0.9.0+) |
 | `GET /api/webhook` / `POST /api/webhook?url=U` | read / set the event webhook; empty `url` clears it (0.9.0+) |
 | `POST /api/gesture?name=G` | run gesture G's action (`hold_up`, `hold_down`, `tap_single`, `tap_double`); not echoed as an event (0.9.0+) |

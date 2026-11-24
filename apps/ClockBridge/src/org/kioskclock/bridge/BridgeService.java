@@ -30,6 +30,7 @@ public class BridgeService extends Service {
     private HttpApi http;
     private Discovery discovery;
     WakeLight wakeLight;
+    final Pairing pairing = new Pairing(this);
     private Thread wakeThread;
     private Thread poller;
     KioskUpdater updater;

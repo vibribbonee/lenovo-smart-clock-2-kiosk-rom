@@ -109,7 +109,7 @@ final class ClockSettings {
         String ip = ipAddress();
         section("Home Assistant", "Install the Kiosk Clock integration (HACS). The clock is found automatically;"
                 + " otherwise add it by address: " + (ip == null ? "<clock-ip>" : ip) + " (port 8765).\n"
-                + "HA asks for the API token once.");
+                + "When Home Assistant asks, tap Allow on the clock. (Or type the token below.)");
         if (token == null) {
             TextView show = chip("Show token", false);
             show.setOnClickListener(v -> requestToken());

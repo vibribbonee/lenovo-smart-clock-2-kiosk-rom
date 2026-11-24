@@ -54,7 +54,7 @@ This repository ships **no Lenovo or Google binaries**: they're copyrighted and 
 - **Google WebView**: the clock's own WebView is Chromium 74 (2019), too old for current Home Assistant dashboards. Download Android System WebView from **[APKMirror](https://www.apkmirror.com/apk/google-inc/android-system-webview/)**: latest **stable** release (not Beta/Dev/Canary) → variant **armeabi‑v7a**, **nodpi**, minimum Android ≤ 10 → the plain **.apk** (not an `.apkm` bundle, not Trichrome). Pass it with `--webview FILE`. The script refuses a wrong variant or a file not signed by Google. Already have a newer WebView on the clock? `--webview-from-device` pulls it over adb. `--no-webview` keeps WebView 74.
 
 ## Home Assistant
-Install the **Kiosk Clock** integration from this repository with HACS (*Custom repositories* → this repo's URL, type *Integration*), restart HA, and the clock appears under *Discovered*. Enter the API token shown on the clock (quick panel → **Clock** → **Show token**) and you get the dock light, phone and mic switch sensors, screen buttons, settings and tap/button triggers. Details and the YAML fallback: [docs/HOME_ASSISTANT.md](docs/HOME_ASSISTANT.md).
+Install the **Kiosk Clock** integration from this repository with HACS (*Custom repositories* → this repo's URL, type *Integration*), restart HA, and the clock appears under *Discovered*. Pair it by tapping **Allow** on the clock (or enter the token from quick panel → **Clock** → **Show token**) and you get the dock light, phone and mic switch sensors, screen buttons, settings and tap/button triggers. Details and the YAML fallback: [docs/HOME_ASSISTANT.md](docs/HOME_ASSISTANT.md).
 
 ## Documentation
 | Doc | Content |

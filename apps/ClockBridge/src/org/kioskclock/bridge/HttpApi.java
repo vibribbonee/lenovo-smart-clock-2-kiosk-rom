@@ -24,6 +24,8 @@ import java.util.Map;
  *   GET  /api/settings          -> the kioskclock_* settings below
  *   POST /api/settings?key=K&value=V  -> change one (whitelisted keys, validated values; applies live;
  *                                        value=default resets the key)
+ *   POST /api/pair?name=N       -> NO AUTH: {"id","code"}; the clock asks its user to Allow (409 if one is pending)
+ *   GET  /api/pair?id=ID        -> NO AUTH: {"state": pending|allowed|denied|expired|done|unknown, "token" once}
  *   GET  /api/info              -> {"id":..,"name":..,"model":..,"version":..,"api":..} (device identity)
  *   GET  /api/webhook           -> {"url":..} (null when not set)
  *   POST /api/webhook?url=U     -> set the event webhook (empty url clears it); used by the HA integration
@@ -95,12 +97,25 @@ final class HttpApi extends Thread {
             int i = h.indexOf(':');
             if (i > 0 && h.substring(0, i).trim().equalsIgnoreCase("Authorization")) auth = h.substring(i + 1).trim();
         }
-        if (!authorized(auth)) { reply(c, 401, "{\"error\":\"unauthorized\"}"); return; }
-
         String path = target, query = "";
         int q = target.indexOf('?');
         if (q >= 0) { path = target.substring(0, q); query = target.substring(q + 1); }
         Map<String, String> params = parse(query);
+
+        // Pairing is the one thing that works without the token: the person at the clock approves it.
+        if (path.equals("/api/pair")) {
+            if (method.equals("POST")) {
+                String asker = params.get("name");
+                String[] r = svc.pairing.start(asker == null || asker.isEmpty() ? "Home Assistant" : asker);
+                if (r == null) { reply(c, 409, "{\"error\":\"another pairing is waiting on the clock\"}"); return; }
+                reply(c, 200, "{\"id\":\"" + r[0] + "\",\"code\":\"" + r[1] + "\",\"expires_in\":" + Pairing.TTL_MS / 1000 + "}");
+            } else {
+                String[] r = svc.pairing.poll(params.get("id"));
+                reply(c, 200, "{\"state\":\"" + r[0] + "\"" + (r[1] == null ? "" : ",\"token\":\"" + r[1] + "\"") + "}");
+            }
+            return;
+        }
+        if (!authorized(auth)) { reply(c, 401, "{\"error\":\"unauthorized\"}"); return; }
 
         if (method.equals("GET") && path.equals("/api/dock")) {
             reply(c, 200, dockJson(svc.lastStatus));
@@ -230,7 +245,7 @@ final class HttpApi extends Thread {
 
     private static void reply(Socket c, int code, String body) throws IOException {
         String status = code == 200 ? "OK" : code == 400 ? "Bad Request" : code == 401 ? "Unauthorized"
-                : code == 404 ? "Not Found" : "Service Unavailable";
+                : code == 404 ? "Not Found" : code == 409 ? "Conflict" : "Service Unavailable";
         byte[] b = body.getBytes(StandardCharsets.UTF_8);
         OutputStream out = c.getOutputStream();
         out.write(("HTTP/1.0 " + code + " " + status + "\r\nContent-Type: application/json\r\nContent-Length: "

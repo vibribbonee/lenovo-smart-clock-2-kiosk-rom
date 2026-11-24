@@ -68,12 +68,16 @@ public class NavService extends AccessibilityService {
         screenReceiver = new ScreenReceiver(this);
         registerReceiver(screenReceiver, new android.content.IntentFilter(ScreenReceiver.ACTION),
                 "org.kioskclock.permission.CONTROL", null);
+        pairPrompt = new PairPrompt(this);
+        registerReceiver(pairPrompt, new android.content.IntentFilter(PairPrompt.ACTION),
+                "org.kioskclock.permission.CONTROL", null);
         alarmButtons = new AlarmButtons(this);
         registerReceiver(alarmButtons, new android.content.IntentFilter(AlarmButtons.ACTION),
                 "org.kioskclock.permission.CONTROL", null);
     }
 
     private AlarmButtons alarmButtons;
+    private PairPrompt pairPrompt;
 
     private Blackout blackout;
     private ScreenReceiver screenReceiver;
@@ -291,6 +295,7 @@ public class NavService extends AccessibilityService {
         if (micIndicator != null) micIndicator.destroy();
         if (screenReceiver != null) unregisterReceiver(screenReceiver);
         if (alarmButtons != null) unregisterReceiver(alarmButtons);
+        if (pairPrompt != null) { unregisterReceiver(pairPrompt); pairPrompt.hide(); }
         if (blackout != null) blackout.off();
         if (panel != null) panel.hide();
         if (topStrip != null) wm.removeView(topStrip);

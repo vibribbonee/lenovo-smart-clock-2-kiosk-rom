@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "Add a Smart Clock 2",
-        "description": "Enter the clock's address. The clock is normally found automatically; use this if it isn't. The token is on the clock: swipe up from the bottom edge, open the quick panel, tap **Clock**, then **Show token** (spaces don't matter).",
+        "description": "Enter the clock's address (Clock settings shows it). The clock is normally found automatically. Leave the token empty to pair by tapping Allow on the clock.",
         "data": {
           "host": "Host",
           "port": "Port",
@@ -12,12 +12,13 @@
         },
         "data_description": {
           "host": "IP address or hostname of the clock (Clock settings shows it).",
-          "port": "ClockBridge API port, 8765 unless you changed it."
+          "port": "ClockBridge API port, 8765 unless you changed it.",
+          "token": "Optional. Empty = pair on the clock instead."
         }
       },
       "token": {
         "title": "Pair {name}",
-        "description": "Found a Smart Clock 2 running the kiosk ROM at {host}. The token is on the clock: swipe up from the bottom edge, open the quick panel, tap **Clock**, then **Show token** (spaces don't matter).",
+        "description": "Enter the API token of the clock at {host}. The token is on the clock: swipe up from the bottom edge, open the quick panel, tap **Clock**, then **Show token** (spaces don't matter).",
         "data": {
           "token": "API token"
         }
@@ -27,6 +28,30 @@
         "description": "The clock no longer accepts the stored token. The token is on the clock: swipe up from the bottom edge, open the quick panel, tap **Clock**, then **Show token** (spaces don't matter).",
         "data": {
           "token": "API token"
+        }
+      },
+      "method": {
+        "title": "Add {name}",
+        "description": "Found a Smart Clock 2 running the kiosk ROM at {host}.",
+        "menu_options": {
+          "pair": "Pair on the clock (tap Allow there)",
+          "token": "Enter the API token"
+        }
+      },
+      "pair_failed": {
+        "title": "Not paired",
+        "description": "The clock did not allow it (Deny, or no answer within 2 minutes).",
+        "menu_options": {
+          "pair": "Try again",
+          "token": "Enter the API token instead"
+        }
+      },
+      "reauth": {
+        "title": "Reconnect {name}",
+        "description": "The clock no longer accepts the stored token.",
+        "menu_options": {
+          "pair": "Pair again on the clock",
+          "reauth_confirm": "Enter the API token"
         }
       }
     },
@@ -39,7 +64,14 @@
       "already_configured": "This clock is already set up.",
       "reauth_successful": "Token updated.",
       "not_ipv4": "Only IPv4 discoveries are used.",
-      "no_device_id": "The clock did not announce a device id."
+      "no_device_id": "The clock did not announce a device id.",
+      "pair_busy": "Another pairing request is still waiting on the clock. Answer it there (or wait 2 minutes) and try again.",
+      "cannot_connect": "Can't reach the clock. Is it on and on the same network?",
+      "invalid_auth": "The clock rejected the token it handed out; try again.",
+      "unknown": "Unexpected answer from the clock; see the log."
+    },
+    "progress": {
+      "pair": "On the clock, tap **Allow**. It shows the code **{code}**: check that it matches."
     }
   },
   "device_automation": {
