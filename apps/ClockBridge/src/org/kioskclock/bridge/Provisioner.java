@@ -44,15 +44,18 @@ final class Provisioner {
             Log.i(App.TAG, "provisioning skipped: WRITE_SECURE_SETTINGS not held");
             return;
         }
+        // A re-run after an update (config version bumped) must never undo what the user changed:
+        // settings are only filled in where still unset, and the time zone is left alone.
+        final boolean upgrade = prefs(c).getInt("done_version", 0) > 0;
         int failures = 0;
         failures += step("components", () -> enableComponents(c, cfg.optJSONArray("enable_components")));
         failures += step("input method", () -> inputMethod(c, cfg.optString("input_method", null)));
         failures += step("accessibility", () -> accessibility(c, cfg.optJSONArray("accessibility_services")));
         failures += step("disable packages", () -> disablePackages(c, cfg.optJSONArray("disable_packages")));
-        failures += step("secure settings", () -> putAll(c, cfg.optJSONObject("secure_settings"), 's'));
-        failures += step("system settings", () -> putAll(c, cfg.optJSONObject("system_settings"), 'y'));
-        failures += step("global settings", () -> putAll(c, cfg.optJSONObject("global_settings"), 'g'));
-        failures += step("time zone", () -> timeZone(c, cfg.optString("time_zone", null)));
+        failures += step("secure settings", () -> putAll(c, cfg.optJSONObject("secure_settings"), 's', upgrade));
+        failures += step("system settings", () -> putAll(c, cfg.optJSONObject("system_settings"), 'y', upgrade));
+        failures += step("global settings", () -> putAll(c, cfg.optJSONObject("global_settings"), 'g', upgrade));
+        if (!upgrade) failures += step("time zone", () -> timeZone(c, cfg.optString("time_zone", null)));
         failures += step("bluetooth name", () -> bluetoothName(cfg.optString("bluetooth_name", null)));
         if (failures == 0) prefs(c).edit().putInt("done_version", version).apply();
         Log.i(App.TAG, "provisioning v" + version + " finished, failures=" + failures);
@@ -191,10 +194,17 @@ final class Provisioner {
         }
     }
 
-    private static void putAll(Context c, JSONObject map, char table) throws Exception {
+    private static void putAll(Context c, JSONObject map, char table, boolean onlyIfUnset) throws Exception {
         if (map == null) return;
         for (Iterator<String> it = map.keys(); it.hasNext(); ) {
             String k = it.next(), v = map.getString(k);
+            if (k.startsWith("_")) continue;
+            if (onlyIfUnset) {
+                String cur = table == 's' ? Settings.Secure.getString(c.getContentResolver(), k)
+                        : table == 'y' ? Settings.System.getString(c.getContentResolver(), k)
+                        : Settings.Global.getString(c.getContentResolver(), k);
+                if (cur != null) continue;
+            }
             boolean ok = table == 's' ? Settings.Secure.putString(c.getContentResolver(), k, v)
                     : table == 'y' ? Settings.System.putString(c.getContentResolver(), k, v)
                     : Settings.Global.putString(c.getContentResolver(), k, v);

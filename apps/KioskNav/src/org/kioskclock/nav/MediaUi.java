@@ -22,7 +22,7 @@ import android.widget.TextView;
 /**
  * Media controls for whatever plays (Bluetooth from a phone, Kiosk Satellite, SmartTube, ...):
  *  - mini player: a small bar at the bottom while something plays; tap = full player, swipe
- *    sideways = hide it for this track (kioskclock_media_controls = auto, the default);
+ *    sideways = hide it until that music stops (kioskclock_media_controls = auto, the default);
  *  - full player: slides in from the right with art, title, artist, source, progress and
  *    previous / play-pause / next; swipe right, tap outside or ✕ closes it;
  *  - the nav bar's third slot shows ♫ while there is something to control (auto and manual).
@@ -58,7 +58,9 @@ final class MediaUi extends android.content.BroadcastReceiver implements MediaWa
     private ImageView fullArt;
     private SeekBar seek;
     private boolean seeking;
-    private String dismissedKey;
+    /** App whose music the mini player was swiped away for; cleared once that music stops. */
+    private String dismissedPkg;
+    private Snackbar hint;
     private long pausedSince;
 
     MediaUi(NavService svc) {
@@ -119,8 +121,9 @@ final class MediaUi extends android.content.BroadcastReceiver implements MediaWa
         MediaWatcher.Now n = watcher.now();
         boolean paused = n != null && !n.playing;
         boolean pausedLong = paused && pausedSince != 0 && android.os.SystemClock.uptimeMillis() - pausedSince > PAUSED_KEEP_MS;
+        if (n == null || pausedLong || (dismissedPkg != null && !dismissedPkg.equals(watcher.pkg()))) dismissedPkg = null;
         boolean want = n != null && "auto".equals(mode()) && full == null && !svc.isBlack() && !pausedLong && !busy
-                && !TextUtils.equals(watcher.key(), dismissedKey);
+                && dismissedPkg == null;
         if (!want) { hideMini(); return; }
         if (mini == null) buildMini();
         miniTitle.setText(n.title);
@@ -169,7 +172,22 @@ final class MediaUi extends android.content.BroadcastReceiver implements MediaWa
         if (mini != null) { wm.removeView(mini); mini = null; }
     }
 
-    void dismissMini() { dismissedKey = watcher.key(); hideMini(); }
+    void dismissMini() {
+        dismissedPkg = watcher.pkg();
+        hideMini();
+        // First time only: say how to turn the pop-up off for good.
+        if (!"1".equals(Settings.Global.getString(svc.getContentResolver(), "kioskclock_media_hint_shown"))) {
+            if (hint == null) hint = new Snackbar(svc);
+            hint.show("Hidden until the music stops · ♫ → Pop-up player: Off to stop it showing");
+            try { Settings.Global.putString(svc.getContentResolver(), "kioskclock_media_hint_shown", "1"); }
+            catch (SecurityException ignored) { }
+        }
+    }
+
+    private void setPopup(boolean on) {
+        try { Settings.Global.putString(svc.getContentResolver(), SETTING, on ? null : "manual"); }
+        catch (SecurityException ignored) { }
+    }
 
     // ---- full player ----------------------------------------------------------------------------
 
@@ -211,6 +229,15 @@ final class MediaUi extends android.content.BroadcastReceiver implements MediaWa
         top.setGravity(Gravity.CENTER_VERTICAL);
         fullSource = line(14, 0xFF9AA0A6, false);
         top.addView(fullSource, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        popupToggle = control("", 13);
+        popupToggle.setPadding(16, 6, 16, 6);
+        popupToggle.setOnClickListener(v -> {
+            setPopup(!"auto".equals(mode()));
+            paintPopupToggle();
+            touched();
+        });
+        top.addView(popupToggle, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, 44));
+        paintPopupToggle();
         TextView close = control("✕", 22);
         close.setOnClickListener(v -> closeFull());
         top.addView(close, new LinearLayout.LayoutParams(64, 52));
@@ -297,6 +324,17 @@ final class MediaUi extends android.content.BroadcastReceiver implements MediaWa
         wm.addView(box, p);
         box.setTranslationX(440);
         box.animate().translationX(0).setDuration(180).start();
+    }
+
+    private TextView popupToggle;
+
+    /** "Pop-up player: On/Off" in the full player: the automatic mini player, without a trip to settings. */
+    private void paintPopupToggle() {
+        if (popupToggle == null) return;
+        boolean on = "auto".equals(mode());
+        popupToggle.setText(on ? "Pop-up player: On" : "Pop-up player: Off");
+        popupToggle.setTextColor(on ? 0xFF202124 : Color.WHITE);
+        popupToggle.setBackground(round(on ? 0xFF8AB4F8 : 0xFF3C4043, 30));
     }
 
     private void fillFull(MediaWatcher.Now n) {

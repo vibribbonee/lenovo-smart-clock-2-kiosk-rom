@@ -118,6 +118,9 @@ final class MediaWatcher {
                 n.position + (android.os.SystemClock.elapsedRealtime() - n.positionAt));
     }
 
+    /** The app behind the current session (null when none). */
+    String pkg() { return current == null ? null : current.getPackageName(); }
+
     String key() {
         Now n = now();
         return n == null ? null : n.title + "\u0000" + n.artist;
