@@ -33,7 +33,10 @@ OWN_CERT = "cd2a24e18ae6346eee70813a1001bb1febb401a384c52cc085e966c9303e4026"
 OWN = {"ClockCore.apk": ("org.kioskclock.core", "out/apps"),
        "ClockBridge.apk": ("org.kioskclock.bridge", "out/apps"),
        "KioskNav.apk": ("org.kioskclock.nav", "out/apps"),
-       "KioskFrameworkOverlay.apk": ("org.kioskclock.overlay.framework", "out/overlays")}
+       "KioskFrameworkOverlay.apk": ("org.kioskclock.overlay.framework", "out/overlays"),
+       "KioskBluetoothOverlay.apk": ("org.kioskclock.overlay.bluetooth", "out/overlays")}
+# Added after a release: a release that predates them just doesn't have them (the build skips them).
+OWN_OPTIONAL = {"KioskBluetoothOverlay.apk"}
 
 WEBVIEW_HELP = """
 The clock's own WebView (Chromium 74, 2019) is too old for modern dashboards, and Google's WebView
@@ -164,6 +167,9 @@ def ownapps():
     for name, (pkg, outdir) in OWN.items():
         a = next((x for x in rel["assets"] if x["name"] == name), None)
         if not a:
+            if name in OWN_OPTIONAL:
+                say(f"  - {name} not in release {rel['tag_name']} yet; skipped")
+                continue
             sys.exit(f"{name} missing from release {rel['tag_name']}")
         d = os.path.join(ROOT, outdir)
         os.makedirs(d, exist_ok=True)
@@ -190,7 +196,7 @@ def check_all():
             sys.exit(f"{spec['file']}: " + "; ".join(problems))
     for name, (pkg, outdir) in OWN.items():
         p = os.path.join(ROOT, outdir, name)
-        if not os.path.exists(p):
+        if not os.path.exists(p) and name not in OWN_OPTIONAL:
             missing.append(f"{outdir}/{name}")
     if missing:
         sys.exit("Missing inputs: " + ", ".join(missing) + " (run ./clockrom.sh build, which fetches them)")

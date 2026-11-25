@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Static overlay for the Bluetooth app (/product/overlay): make the clock a proper Bluetooth
+  speaker. With both AVRCP roles on, a phone's AVRCP link lands on the Target role (the role a
+  phone plays) and the Controller role never connects: no volume sync, no title/artist, no
+  play/pause from the clock. Car head units turn Target off for the same reason. Nothing is lost:
+  this firmware has no A2DP source (the clock can't send audio to Bluetooth speakers), so Target
+  had nothing to control.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.kioskclock.overlay.bluetooth"
+    android:versionCode="1"
+    android:versionName="1.0">
+    <uses-sdk android:minSdkVersion="29" android:targetSdkVersion="29" />
+    <overlay android:targetPackage="com.android.bluetooth" android:isStatic="true" android:priority="10" />
+    <application android:hasCode="false" />
+</manifest>

@@ -93,6 +93,13 @@
       "why": "Adds Google WebView to config_webview_packages."
     },
     {
+      "src": "out/overlays/KioskBluetoothOverlay.apk",
+      "dst": "/overlay/KioskBluetoothOverlay.apk",
+      "label": "u:object_r:vendor_overlay_file:s0",
+      "why": "Bluetooth speaker: AVRCP Controller instead of Target, so the phone syncs volume and sends title/artist/controls (no A2DP source on this firmware, so Target had nothing to do).",
+      "optional": true
+    },
+    {
       "src": "rom/product/etc/permissions/privapp-permissions-kioskclock.xml",
       "dst": "/etc/permissions/privapp-permissions-kioskclock.xml",
       "why": "Required by ro.control_privapp_permissions=enforce."

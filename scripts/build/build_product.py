@@ -109,6 +109,9 @@ def main():
     for a in man["add"]:
         s = os.path.join(ROOT, a["src"])
         if not os.path.isfile(s):
+            if a.get("optional"):
+                print(f"skipped optional {a['dst']} (no {a['src']})")
+                continue
             sys.exit(f"missing input {a['src']}")
         dst, label = a["dst"], a.get("label", SYSTEM_LABEL)
         cmds = []
