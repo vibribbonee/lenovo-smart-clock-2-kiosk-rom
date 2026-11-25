@@ -36,5 +36,5 @@ jobs:
       - uses: hacs/action@main
         with:
           category: integration
-          # brands: the icon lives in home-assistant/brands once submitted. topics: set on the GitHub repo (see docs/TODO.md).
-          ignore: brands topics
+          # brands: the icon lives in home-assistant/brands once submitted.
+          ignore: brands
