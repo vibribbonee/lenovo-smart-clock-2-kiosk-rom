@@ -7,7 +7,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.kioskclock.nav"
     android:versionCode="24"
-    android:versionName="1.1.0">
+    android:versionName="1.0.0">
 
     <uses-sdk android:minSdkVersion="29" android:targetSdkVersion="29" />
 

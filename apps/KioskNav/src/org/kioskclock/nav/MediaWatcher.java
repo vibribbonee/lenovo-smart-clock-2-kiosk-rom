@@ -159,7 +159,10 @@ final class MediaWatcher {
         Callback(MediaWatcher w) { this.w = w; }
         @Override public void onPlaybackStateChanged(PlaybackState state) { w.listener.onMedia(w); }
         @Override public void onMetadataChanged(MediaMetadata metadata) { w.listener.onMedia(w); }
-        @Override public void onSessionDestroyed() { w.pick(w.msm == null ? null : w.msm.getActiveSessions(null)); }
+        @Override public void onSessionDestroyed() {
+            try { w.pick(w.msm == null ? null : w.msm.getActiveSessions(null)); }
+            catch (SecurityException e) { w.pick(null); }
+        }
     }
 
     private static final class Sessions implements MediaSessionManager.OnActiveSessionsChangedListener {

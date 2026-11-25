@@ -72,6 +72,11 @@
       "appops": ["android:request_install_packages", "android:get_usage_stats", "android:write_settings", "android:system_alert_window"],
       "permissions": ["android.permission.READ_LOGS", "android.permission.READ_EXTERNAL_STORAGE", "android.permission.WRITE_EXTERNAL_STORAGE"]
     },
+    "org.smarttube.stable": {
+      "appops": [
+        "android:request_install_packages"
+      ]
+    },
     "org.kioskclock.core": {
       "permissions": [
         "android.permission.RECORD_AUDIO"

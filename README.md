@@ -13,8 +13,11 @@ Built from stock firmware **1.2.2.627** and running daily on a real clock (Kiosk
 | **Kiosk Satellite** | the only home app, starts on boot, recovers after crashes, updated automatically from its GitHub releases (signature-checked) |
 | **Modern WebView** | Google WebView you supply (tested: 157) replaces the 2019 WebView 74; updatable |
 | **Voice that works** | ClockBridge holds the mic at 48 kHz stereo from early boot, working around a MediaTek MT8167 capture bug ([details](docs/PERFORMANCE_BASELINE.md)) |
-| **Navigation** | swipe up from the bottom edge: Back · Home (the firmware has no SystemUI) |
-| **Quick settings** | swipe down from the top edge: brightness + Auto, volume, dock light, Wi‑Fi, Bluetooth, Night light, screen off (tap to wake), restart, Settings (tap: clock settings, hold: Android Settings) |
+| **Navigation** | swipe up from the bottom edge: Back · Home · ♫ (the firmware has no SystemUI) |
+| **Media controls** | anything that plays (Bluetooth from your phone, Kiosk Satellite, SmartTube): a mini player at the bottom, a full player with art, controls and volume from ♫; stays out of the way of alarms and the voice assistant |
+| **Bluetooth speaker** | tap the Bluetooth tile, pair *Smart Clock 2* from your phone, play |
+| **Extras** | optional apps installed from their official releases and kept updated: **SmartTube** (YouTube without Google services, a cast target for the YouTube app) |
+| **Quick settings** | swipe down from the top edge: brightness + Auto, volume, dock light, Wi‑Fi, Bluetooth (tap: pair a phone), Night light, screen off (tap to wake), restart, Settings (tap: clock settings, hold: Android Settings) |
 | **Hardware** | volume keys with click (they set the alarm volume while one rings); a firm tap on top snoozes a ringing alarm, a double tap stops it (like stock); wake-up light: the dock light and/or HA lights fade in before an alarm; hold Vol+ / Vol− and both taps can each be set to a shortcut (voice assistant, play/pause, mute, dock light, night light, screen off/toggle, alarm snooze/stop, or just an HA event); mic‑switch indicator (several styles); dock events |
 | **Home Assistant** | **Kiosk Clock integration** (HACS): the clock is discovered automatically; dock light, phone charging, mic switch, screen, settings and tap/button triggers as entities, no YAML — [docs/HOME_ASSISTANT.md](docs/HOME_ASSISTANT.md) |
 | **Out of the box** | first boot after flash/reset sets home app, keyboard, nav bar, disables leftovers, no screen timeout — no Google setup |
@@ -90,7 +93,7 @@ The ROM's own apps update themselves over Wi-Fi from this repository's GitHub re
 Never flash or erase automatically · never format userdata without a deliberate step · never overwrite backups · never touch calibration/identity partitions · never remove unknown components · never claim untested functionality. `backups/`, `investigation/`, `firmware/`, `keys/` and APKs are git-ignored and must never be published.
 
 ## Credits
-[ThomasPrior/LenovoSmartClock2](https://github.com/ThomasPrior/LenovoSmartClock2) and the XDA "Lets get started on the Lenovo Smart Clock 2" thread (pogo pinout, BROM access), [bkerler/mtkclient](https://github.com/bkerler/mtkclient), [fritzbytes/MicAnchor](https://github.com/fritzbytes/MicAnchor) (the mic-anchor idea), [jxlarrea/kiosk-satellite](https://github.com/jxlarrea/kiosk-satellite) and its [LineageOS Echo images](https://github.com/jxlarrea/lineageos-echo-kiosk-satellite) (inspiration), TymEK49 (first dock-light notes), AOSP avbtool.
+[jxlarrea/kiosk-satellite](https://github.com/jxlarrea/kiosk-satellite) (the clock's interface, voice satellite, alarms and media player), [yuliskov/SmartTube](https://github.com/yuliskov/SmartTube) (the optional YouTube extra), [Simple Keyboard](https://github.com/rkkr/simple-keyboard), [ThomasPrior/LenovoSmartClock2](https://github.com/ThomasPrior/LenovoSmartClock2) and the XDA "Lets get started on the Lenovo Smart Clock 2" thread (pogo pinout, BROM access), [bkerler/mtkclient](https://github.com/bkerler/mtkclient), [fritzbytes/MicAnchor](https://github.com/fritzbytes/MicAnchor) (the mic-anchor idea), Kiosk Satellite's [LineageOS Echo images](https://github.com/jxlarrea/lineageos-echo-kiosk-satellite) (inspiration), TymEK49 (first dock-light notes), AOSP avbtool.
 
 ## License
 [MIT](LICENSE) for the code and documentation in this repository. Third-party APKs and Lenovo firmware are not included and keep their own licenses.

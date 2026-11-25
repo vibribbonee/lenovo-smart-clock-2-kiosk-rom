@@ -44,6 +44,7 @@ final class OwnUpdater {
         while (!Thread.currentThread().isInterrupted()) {
             if (enabled() && svc.getSystemService(UserManager.class).isUserUnlocked() && svc.updater.online()) {
                 checkNow();
+                svc.extras.updateInstalled();
                 KioskUpdater.sleep(INTERVAL_MS);
             } else {
                 KioskUpdater.sleep(60_000);

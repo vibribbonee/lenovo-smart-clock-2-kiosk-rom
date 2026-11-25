@@ -23,6 +23,7 @@ public class InstallResultReceiver extends BroadcastReceiver {
         }
         String pkg = intent.getStringExtra("pkg");
         BridgeService svc = BridgeService.get();
+        if (svc != null && pkg != null) svc.extras.onInstalled(pkg, status == PackageInstaller.STATUS_SUCCESS, r);
         if (pkg == null || KioskUpdater.PKG.equals(pkg)) {
             Log.i(App.TAG, "kiosk update: " + r);
             if (svc != null && svc.updater != null) svc.updater.lastResult = r;

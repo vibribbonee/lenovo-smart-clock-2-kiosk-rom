@@ -22,7 +22,8 @@ The integration then registers its own webhook on the clock (no `set_webhook` ne
 | `button.…_check_kiosk_update` | check GitHub for a newer Kiosk Satellite now |
 | `button.…_run_volume_hold_action`, `…_run_volume_−_hold_action`, `…_run_tap_action`, `…_run_double_tap_action` | run whatever that gesture is set to, as if you did it on the clock (ClockBridge 0.9.0+) |
 | `select.…_mute_indicator`, `…_colour`, `…_size` | mute indicator style |
-| `select.…_hold_volume_up`, `…_hold_volume_down`, `…_tap_on_top`, `…_double_tap_on_top` | what each gesture does (see *Gestures*) |
+| `select.…_hold_volume_up`, `…_hold_volume_down`, `…_tap_on_top`, `…_double_tap_on_top`, `…_tap_while_ringing`, `…_double_tap_while_ringing`, `…_double_tap_speed` | what each gesture does (see *Gestures*) |
+| `select.…_media_controls` | the on-clock media controls: *Automatic* (mini player), *Only with ♫*, *Off* |
 | `sensor.…_kiosk_satellite_version`, `…_webview_version`, `…_kiosk_update_status` | diagnostics |
 | `update.…_kiosk_clock_apps` | the ROM's apps vs this repo's latest release, with release notes; *Install* makes the clock update now (ClockBridge 1.0.0+) |
 | `event.…_tap`, `…_button_hold`, `…_mic_switch` | taps (single/double), Vol± holds (attribute `action`), mic switch |
@@ -109,6 +110,7 @@ Settings (`/api/settings`):
 | `kioskclock_wake_light` | `off`, `dock`, `ha`, `both` (0.9.2+) | `off` |
 | `kioskclock_wake_minutes` | 5–60 (0.9.2+) | 20 |
 | `kioskclock_wake_max` | dock light limit 1–10 (0.9.2+) | 10 |
+| `kioskclock_media_controls` | `auto`, `manual`, `off` (1.0.0+) | `auto` |
 | `kioskclock_double_tap_ms` | 300–900: how soon the second tap must follow (Fast 300, Relaxed 700); a single tap waits this long (0.9.1+) | 450 |
 
 ## configuration.yaml example (fallback)

@@ -17,6 +17,7 @@ import android.util.Log;
  *   cmd=reboot              restart the device
  *   cmd=token               ordered broadcast; result data = the HTTP API token (for pairing Home Assistant)
  *   cmd=pair_answer id=.. allow=true|false   the answer from KioskNav's pairing prompt
+ *   cmd=extra_install id=smarttube           install an optional extra app (Clock settings → Extras)
  */
 public class ControlReceiver extends BroadcastReceiver {
     static final String ACTION = "org.kioskclock.bridge.CONTROL";
@@ -42,6 +43,9 @@ public class ControlReceiver extends BroadcastReceiver {
                 break;
             case "night":
                 Settings.Secure.putInt(c.getContentResolver(), "night_display_activated", i.getBooleanExtra("on", false) ? 1 : 0);
+                break;
+            case "extra_install":
+                if (svc != null) svc.extras.installAsync(i.getStringExtra("id"));
                 break;
             case "pair_answer":
                 if (svc != null) svc.pairing.answer(i.getStringExtra("id"), i.getBooleanExtra("allow", false));

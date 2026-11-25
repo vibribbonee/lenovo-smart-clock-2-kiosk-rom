@@ -35,6 +35,16 @@ report: `adb logcat -d | grep -E "ClockBridge|ClockCore|KioskNav" > clock-log.tx
 | Screen stays black | It may be the "screen off" black screen: tap it. A tap on the top doesn't wake it unless a gesture is set to *Screen on / off*. |
 | The tour shows again / never shows | It shows once per fresh setup. Show it any time: quick panel → **Clock** → *Show the tour*. |
 
+## Media and Bluetooth
+
+| Symptom | Fix |
+|---|---|
+| No mini player / ♫ when music plays | Quick panel → **Clock** → *Media controls*: *Automatic*. It hides while an alarm rings or the assistant listens. Needs the ROM's KioskNav (1.0.0+) in its privileged location; an adb-installed copy can't read media. |
+| No album art | Your phone decides what it sends over Bluetooth; title and artist always come through, cover art often doesn't on this Android version. |
+| Phone can't find the clock | Tap the Bluetooth tile (not hold): the clock is visible for 2 minutes and shows *Ready to pair*. |
+| SmartTube is hard to use with touch | It's made for TV remotes. Use it as a cast target: SmartTube → Settings → **Remote control**; on your phone, YouTube → Settings → General → **Watch on TV** → *Connect using TV code*. SmartTube has to be open to receive a cast. |
+| *Install SmartTube* fails | The reason shows under the button (no network, GitHub unreachable, certificate changed). Try again later; it only installs SmartTube's official stable release. |
+
 ## Voice
 
 | Symptom | Fix |
@@ -67,6 +77,7 @@ report: `adb logcat -d | grep -E "ClockBridge|ClockCore|KioskNav" > clock-log.tx
 
 | Symptom | Fix |
 |---|---|
+| A bug report needs details | HA: *Settings → Devices → the clock → ⋮ → Download diagnostics* (the token is removed). |
 | Is it up to date? | HA: the *Kiosk Clock apps* update entity. On the clock: `curl http://<clock-ip>:8765/api/status` (with the token) → `apps_update_result`. |
 | Turn automatic app updates off | `kioskclock_app_updates` = `0` (HA: `/api/settings`, or `adb shell settings put global kioskclock_app_updates 0`). |
 | An update broke something | Re-flash the ROM build you had (`./clockrom.sh flash`); the flashed apps are replaced by a newer update only if its version is higher, so also set `kioskclock_app_updates` to `0` until fixed, and open an issue with the log. |

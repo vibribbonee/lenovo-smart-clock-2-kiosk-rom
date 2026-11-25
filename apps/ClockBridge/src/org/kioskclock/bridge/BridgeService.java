@@ -31,6 +31,7 @@ public class BridgeService extends Service {
     private Discovery discovery;
     WakeLight wakeLight;
     final Pairing pairing = new Pairing(this);
+    final Extras extras = new Extras(this);
     private Thread wakeThread;
     private Thread poller;
     KioskUpdater updater;

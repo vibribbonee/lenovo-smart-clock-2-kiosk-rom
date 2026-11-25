@@ -14,7 +14,8 @@
 
 ## Open: next up
 - [ ] Kiosk Satellite defaults through its `ProvisionActivity` (`ks.provision`, needs `DUMP`, which a priv-app can hold): microphone gain (~+17 dB), Clock screensaver with Night mode. Payload format undocumented: test on the clock over adb with a harmless payload first.
-- [ ] Bluetooth speaker tile (A2DP sink works, tested 2026-11-25): one tap = discoverable for 2 min + "Ready to pair" banner; first-boot Bluetooth name "Smart Clock 2".
+- [ ] On the clock (build 7): media controls with Bluetooth audio, the Bluetooth pairing tile and the *Smart Clock 2* name, SmartTube install + casting + how usable touch is.
+- [ ] GitHub repo topics (HACS validation needs them; CI skips that check until then): `gh repo edit vibribbonee/lenovo-smart-clock-2-kiosk-rom --add-topic home-assistant,hacs,hacs-integration,lenovo-smart-clock-2,android-rom,kiosk`
 - [ ] Experiment: the clock as a Bluetooth → Music Assistant **line-in** (Sendspin `source@v1` role): capture the A2DP sink audio (privileged CAPTURE_AUDIO_OUTPUT / remote submix) and offer it as a Live Input, so a phone paired to the clock plays on every speaker. Needs the Sendspin source protocol and a latency test.
 - [ ] Build 7 on the clock: ClockCore holds the mic at boot, ClockBridge starts without being persistent, one real over-Wi-Fi update (publish v1.0.0 first), onboarding tour, timers with the tap.
 

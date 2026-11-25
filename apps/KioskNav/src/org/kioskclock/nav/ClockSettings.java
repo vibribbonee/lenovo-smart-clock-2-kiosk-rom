@@ -116,6 +116,8 @@ final class ClockSettings {
         section("Dock light limit", "How bright the dock light gets by the alarm");
         chips("kioskclock_wake_max", WAKE_MAX, null);
 
+        extras();
+
         String ip = ipAddress();
         section("Home Assistant", "Install the Kiosk Clock integration (HACS). The clock is found automatically;"
                 + " otherwise add it by address: " + (ip == null ? "<clock-ip>" : ip) + " (port 8765).\n"
@@ -245,4 +247,49 @@ final class ClockSettings {
     }
 
     private String ipAddress() { return Onboarding.ipAddress(ctx); }
+
+    private static final String SMARTTUBE = "org.smarttube.stable";
+
+    /** Optional apps ClockBridge installs from their official releases. */
+    private void extras() {
+        section("Extras", "SmartTube: YouTube without Google services. It's made for TV remotes (touch is limited),"
+                + " so it's mainly a cast target: in SmartTube open Settings → Remote control, then on your phone"
+                + " YouTube → Settings → General → Watch on TV → Connect using TV code.");
+        String state = Settings.Global.getString(ctx.getContentResolver(), "kioskclock_extra_smarttube");
+        boolean installed;
+        try { ctx.getPackageManager().getPackageInfo(SMARTTUBE, 0); installed = true; }
+        catch (android.content.pm.PackageManager.NameNotFoundException e) { installed = false; }
+        LinearLayout r = new LinearLayout(ctx);
+        if (installed) {
+            TextView open = chip("Open SmartTube", true);
+            open.setOnClickListener(v -> {
+                android.content.pm.PackageManager pm = ctx.getPackageManager();
+                android.content.Intent i = pm.getLeanbackLaunchIntentForPackage(SMARTTUBE);
+                if (i == null) i = pm.getLaunchIntentForPackage(SMARTTUBE);
+                if (i == null) return;
+                hide();
+                ctx.startActivity(i.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK));
+            });
+            r.addView(open);
+        } else if ("installing".equals(state)) {
+            r.addView(chip("Installing SmartTube… (about 25 MB)", false));
+        } else {
+            TextView inst = chip("Install SmartTube", false);
+            inst.setOnClickListener(v -> {
+                ctx.sendBroadcast(new android.content.Intent(QuickPanel.CONTROL).setPackage("org.kioskclock.bridge")
+                        .putExtra("cmd", "extra_install").putExtra("id", "smarttube"), "org.kioskclock.permission.CONTROL");
+                Settings.Global.putString(ctx.getContentResolver(), "kioskclock_extra_smarttube", "installing");
+                int y = scroll.getScrollY();
+                build();
+                list.post(() -> scroll.scrollTo(0, y));
+            });
+            r.addView(inst);
+            if (state != null && state.startsWith("failed")) {
+                TextView err = text(state, 13, 0xFFF28B82);
+                err.setPadding(16, 12, 0, 0);
+                r.addView(err);
+            }
+        }
+        list.addView(r);
+    }
 }
