@@ -121,7 +121,8 @@
     }
   ],
   "append_props": {
-    "_why": "Appended to /product/build.prop. Non-ro props here override earlier defaults.",
-    "persist.logd.size": "1048576"
+    "_why": "Appended to /product/build.prop. Non-ro props here override earlier defaults. disableabsvol: a phone's Bluetooth volume steps reached the clock up to ~10 s late (absolute volume handshake); without it the phone scales its own audio, instantly.",
+    "persist.logd.size": "1048576",
+    "persist.bluetooth.disableabsvol": "true"
   }
 }

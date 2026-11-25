@@ -45,6 +45,10 @@ public class OemKeyReceiver extends BroadcastReceiver {
     private static final String[] KS_RING_END = {KS + "ALARM_SNOOZED", KS + "ALARM_STOPPED", KS + "ALARM_SILENCED",
             KS + "VS_TIMER_DISMISSED", KS + "VS_TIMER_CANCELLED"};
     private static final long RING_MAX_MS = 15 * 60_000L;
+    /** BluetoothA2dpSink.ACTION_CONNECTION_STATE_CHANGED (hidden constant): a phone connected to the clock as a speaker. */
+    static final String A2DP_SINK_STATE = "android.bluetooth.a2dp-sink.profile.action.CONNECTION_STATE_CHANGED";
+    /** Without absolute volume the phone sets the loudness; the clock's own volume should not be near silent. */
+    private static final int BT_MIN_PERCENT = 70;
     private long ringingSince;
     /** Window for the second tap of a double tap; kioskclock_double_tap_ms overrides it (300..900). */
     static final long DOUBLE_TAP_MS = 450;
@@ -108,6 +112,7 @@ public class OemKeyReceiver extends BroadcastReceiver {
     IntentFilter filter() {
         IntentFilter f = new IntentFilter();
         for (String a : new String[]{TAP, DOCK_IN, DOCK_OUT, VOL_UP, VOL_DOWN, MIC}) f.addAction(a);
+        f.addAction(A2DP_SINK_STATE);
         for (String a : KS_RING_START) f.addAction(a);
         for (String a : KS_RING_END) f.addAction(a);
         return f;
@@ -116,6 +121,18 @@ public class OemKeyReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         String a = intent.getAction();
+        if (A2DP_SINK_STATE.equals(a)) {
+            if (intent.getIntExtra("android.bluetooth.profile.extra.STATE", -1) == 2 /* STATE_CONNECTED */) {
+                AudioManager am = audio();
+                int max = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+                int min = Math.round(max * BT_MIN_PERCENT / 100f);
+                if (am.getStreamVolume(AudioManager.STREAM_MUSIC) < min) {
+                    am.setStreamVolume(AudioManager.STREAM_MUSIC, min, 0);
+                    Log.i(App.TAG, "phone connected over Bluetooth: clock volume raised to " + BT_MIN_PERCENT + "%");
+                }
+            }
+            return;
+        }
         if (a != null && a.startsWith(KS)) {
             boolean start = a.equals(KS_RING_START[0]) || a.equals(KS_RING_START[1]);
             ringingSince = start ? SystemClock.uptimeMillis() : 0;

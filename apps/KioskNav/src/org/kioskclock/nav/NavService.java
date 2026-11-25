@@ -48,7 +48,9 @@ public class NavService extends AccessibilityService {
         buildBar();
         buildVolumeBar();
         volumeReceiver = new VolumeReceiver(this);
-        registerReceiver(volumeReceiver, new android.content.IntentFilter(VolumeReceiver.ACTION));
+        android.content.IntentFilter vf = new android.content.IntentFilter(VolumeReceiver.ACTION);
+        vf.addAction(VolumeReceiver.SYSTEM);
+        registerReceiver(volumeReceiver, vf);
         panel = new QuickPanel(this);
         dockReceiver = new DockReceiver(panel);
         registerReceiver(dockReceiver, new android.content.IntentFilter(DockReceiver.ACTION));
