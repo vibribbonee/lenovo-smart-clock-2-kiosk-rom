@@ -56,7 +56,7 @@ final class OwnUpdater {
         lastCheck = System.currentTimeMillis();
         String url = setting(URL_SETTING);
         if (url == null || !url.startsWith("https://")) url = RELEASES;
-        StringBuilder done = new StringBuilder();
+        StringBuilder done = new StringBuilder(), rejected = new StringBuilder();
         try {
             JSONObject rel = new JSONObject(new String(KioskUpdater.get(url), "UTF-8"));
             String tag = rel.optString("tag_name", "?");
@@ -79,11 +79,16 @@ final class OwnUpdater {
                         KioskUpdater.install(svc, apk, t[0]);
                     } else {
                         Log.i(App.TAG, "app update: " + t[0] + " " + problem);
+                        if (!problem.startsWith("not newer")) {
+                            if (rejected.length() > 0) rejected.append(", ");
+                            rejected.append(t[0].substring(t[0].lastIndexOf('.') + 1)).append(": ").append(problem);
+                        }
                     }
                 } finally {
                     if (apk.exists() && !apk.delete()) Log.w(App.TAG, "could not delete " + apk);
                 }
             }
+            if (rejected.length() > 0) return result("rejected " + rejected + " (" + tag + ")");
             return result(done.length() == 0 ? "up to date (" + tag + ")" : "installing " + done + " from " + tag);
         } catch (Exception e) {
             return result("error: " + e.getClass().getSimpleName() + ": " + e.getMessage());
@@ -93,11 +98,11 @@ final class OwnUpdater {
     /** null if acceptable, else why not (including "not newer", the normal case). */
     private String verify(File apk, String pkg) throws Exception {
         PackageManager pm = svc.getPackageManager();
-        PackageInfo pi = pm.getPackageArchiveInfo(apk.getPath(), PackageManager.GET_SIGNING_CERTIFICATES);
+        PackageInfo pi = KioskUpdater.archiveInfo(pm, apk);
         if (pi == null) return "not a valid APK";
         if (!pkg.equals(pi.packageName)) return "unexpected package " + pi.packageName;
-        if (pi.signingInfo == null || pi.signingInfo.hasMultipleSigners()) return "unexpected signers";
-        Signature[] sigs = pi.signingInfo.getApkContentsSigners();
+        Signature[] sigs = KioskUpdater.signers(pi);
+        if (sigs == null) return "unexpected signers";
         if (sigs.length != 1 || !PINNED_CERT_SHA256.equals(KioskUpdater.sha256(sigs[0].toByteArray())))
             return "signing certificate does not match";
         try {

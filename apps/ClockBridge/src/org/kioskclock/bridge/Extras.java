@@ -80,11 +80,11 @@ final class Extras {
             if (url == null) return "failed: no " + e.assetPrefix + "*" + e.assetSuffix + " in " + tag;
             KioskUpdater.download(url, apk);
             PackageManager pm = svc.getPackageManager();
-            PackageInfo pi = pm.getPackageArchiveInfo(apk.getPath(), PackageManager.GET_SIGNING_CERTIFICATES);
+            PackageInfo pi = KioskUpdater.archiveInfo(pm, apk);
             if (pi == null) return "failed: not a valid APK";
             if (!e.pkg.equals(pi.packageName)) return "failed: unexpected package " + pi.packageName;
-            if (pi.signingInfo == null || pi.signingInfo.hasMultipleSigners()) return "failed: unexpected signers";
-            Signature[] sigs = pi.signingInfo.getApkContentsSigners();
+            Signature[] sigs = KioskUpdater.signers(pi);
+            if (sigs == null) return "failed: unexpected signers";
             String cert = KioskUpdater.sha256(sigs[0].toByteArray());
             String known = prefs().getString("cert_" + e.id, null);
             if (known != null && !known.equals(cert)) return "failed: signing certificate changed";

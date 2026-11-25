@@ -134,11 +134,11 @@ final class KioskUpdater {
     /** Returns null if the APK is acceptable, otherwise the reason. */
     private String verify(File apk) throws Exception {
         PackageManager pm = ctx.getPackageManager();
-        PackageInfo pi = pm.getPackageArchiveInfo(apk.getPath(), PackageManager.GET_SIGNING_CERTIFICATES);
+        PackageInfo pi = archiveInfo(pm, apk);
         if (pi == null) return "not a valid APK";
         if (!PKG.equals(pi.packageName)) return "unexpected package " + pi.packageName;
-        if (pi.signingInfo == null || pi.signingInfo.hasMultipleSigners()) return "unexpected signers";
-        Signature[] sigs = pi.signingInfo.getApkContentsSigners();
+        Signature[] sigs = signers(pi);
+        if (sigs == null) return "unexpected signers";
         if (sigs.length != 1 || !PINNED_CERT_SHA256.equals(sha256(sigs[0].toByteArray()))) return "signing certificate does not match";
         try {
             long cur = pm.getPackageInfo(PKG, 0).getLongVersionCode();
@@ -166,6 +166,27 @@ final class KioskUpdater {
             PendingIntent pend = PendingIntent.getBroadcast(ctx, id, i, PendingIntent.FLAG_UPDATE_CURRENT);
             s.commit(pend.getIntentSender());
         }
+    }
+
+    /** An APK file's package info including its signer (both APIs: see {@link #signers}). */
+    @SuppressWarnings("deprecation")
+    static PackageInfo archiveInfo(PackageManager pm, File apk) {
+        return pm.getPackageArchiveInfo(apk.getPath(), PackageManager.GET_SIGNING_CERTIFICATES | PackageManager.GET_SIGNATURES);
+    }
+
+    /**
+     * The APK's single signer, or null if it has none or several. On Android 10 getPackageArchiveInfo
+     * leaves signingInfo null for a file that isn't installed (platform quirk); the older
+     * PackageInfo.signatures is filled in, so fall back to it.
+     */
+    @SuppressWarnings("deprecation")
+    static Signature[] signers(PackageInfo pi) {
+        if (pi.signingInfo != null) {
+            if (pi.signingInfo.hasMultipleSigners()) return null;
+            Signature[] s = pi.signingInfo.getApkContentsSigners();
+            if (s != null && s.length == 1) return s;
+        }
+        return pi.signatures != null && pi.signatures.length == 1 ? pi.signatures : null;
     }
 
     static byte[] get(String url) throws Exception {
