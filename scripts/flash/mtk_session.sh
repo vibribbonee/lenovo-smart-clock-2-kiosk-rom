@@ -56,7 +56,7 @@ case "$MODE" in
   *) echo "unknown mode $MODE"; exit 1 ;;
 esac
 echo "--- mtkclient will run:"; cat "$S"; echo "---"
-echo "Now: power off the clock, hold BOTH volume keys, plug power in (pogo USB attached)."
+echo "Now: with the clock fully off (power adapter and pogo cable unplugged), hold BOTH volume keys and plug the pogo cable and power in."
 (cd "$LOG" && $MTK script "$S" 2>&1 | tee "$LOG/mtk_output.txt")
 
 if [ "$MODE" = rehearsal ]; then
@@ -73,8 +73,9 @@ if [ "$need" -gt 0 ] && [ "$got" -lt "$need" ]; then
   if [ "$got" -eq 0 ]; then echo "NOTHING WAS WRITTEN: mtkclient did not get a connection to the clock."
   else echo "INCOMPLETE: only $got of $need partitions were written. Run the same command again before rebooting the clock."; fi
   if grep -q "Please disconnect" "$LOG/mtk_output.txt"; then
-    echo "The clock was already in download mode when mtkclient started. Unplug its power, wait 5 s, run this again,"
-    echo "and only plug power back in (holding both volume keys) after the 'Now: power off the clock' line."
+    echo "The clock was still in download mode from an earlier attempt. Switch it fully off: unplug BOTH the power"
+    echo "adapter and the pogo USB cable (the cable powers the clock too) and wait 10 s. Run this again; only after the"
+    echo "'Now: …' line, hold both volume keys and plug the pogo cable and power back in."
   fi
   exit 3
 fi
