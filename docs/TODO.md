@@ -16,10 +16,11 @@
 - [x] Build 7 flashed: ClockCore holds the mic from the start of boot (before ClockBridge), ClockBridge/KioskNav start as privileged non-persistent apps, provisioning v6 (Bluetooth name *Smart Clock 2*), two clean boots.
 - [x] v1.0.0 published, then **v1.0.1** (fix: the updaters rejected every APK on Android 10). Repo topics set; CI green (tests, hassfest, HACS).
 - [x] Over-Wi-Fi update proven: ClockBridge 1.0.1 installed over the ROM copy keeps its privileges and restarts itself; the clock then installed KioskNav 1.0.1 from the v1.0.1 release by itself (signature, version checks), privileges and accessibility intact.
+- [x] v1.0.2: Bluetooth AVRCP overlay (image change, needs a flash).
 - [x] HA integration paired, pushes events; *Kiosk Clock apps* update entity sees the releases.
 
 ## Still to try on the clock
-- [ ] Media controls with your phone over Bluetooth (mini player, ♫, full player, volume); the Bluetooth tile's *Ready to pair*.
+- [x] Bluetooth speaker with a phone: AVRCP Controller connects (overlay), phone volume syncs (4 → 52 %), title/artist/position arrive. Still to look at on screen: mini player, ♫, full player.
 - [ ] Alarm with *Wake-up light: Both* (dock + a lamp picked under *Kiosk Clock → Configure*); tap = snooze, double tap = stop; a 1-minute timer stopped by a tap.
 - [ ] SmartTube: Clock settings → Extras → Install; open it; touch; *Remote control* → link from the YouTube app.
 - [ ] Kiosk defaults over adb: the `ks.provision` payload format (mic gain, Clock screensaver).
