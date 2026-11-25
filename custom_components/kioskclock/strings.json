@@ -327,6 +327,14 @@
       "apps_update": {
         "name": "Kiosk Clock apps"
       }
+    },
+    "switch": {
+      "app_updates": {
+        "name": "Automatic app updates"
+      },
+      "mic_anchor": {
+        "name": "Mic anchor"
+      }
     }
   },
   "options": {

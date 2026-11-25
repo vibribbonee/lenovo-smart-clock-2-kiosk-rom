@@ -12,6 +12,17 @@
 - [ ] Wi-Fi reconnect, Bluetooth audio, 72 h stability, idle RAM/CPU.
 - [ ] **Factory reset** from Settings and recovery: everything comes back without manual steps. Check the leftover Device Owner (`com.google.assistant.core`, no longer in the image) doesn't get in the way.
 
+## Morning checklist (build 7 → v1.0.0)
+1. **Flash build 7**: `./clockrom.sh flash` → `update` → after the *"Now: …"* line, hold both volume keys and plug power in. (Not done overnight on purpose: it changes how the apps start at boot.)
+2. **Restart Home Assistant** once (the latest integration is already downloaded into HA).
+3. On the clock, check: it boots; the tour shows; *"OK Nabu"* works (`adb shell settings get global kioskclock_mic_anchor_state` = *holding 48000 Hz x2*); swipe up shows ♫ while your phone plays over Bluetooth; the Bluetooth tile says *Ready to pair: Smart Clock 2*.
+4. **Pair HA**: *Discovered* → *Pair on the clock* → Allow. Then entities, a tap event, the *Run … action* buttons, the *Kiosk Clock apps* update entity (*up to date*).
+5. **Alarms**: set a Kiosk alarm 25 min ahead with *Wake-up light: Both* (pick a lamp under *Kiosk Clock → Configure*): dock + lamp fade; tap = snooze, double tap = stop; a 1-minute timer stopped by a tap; taps with nothing ringing don't snooze.
+6. **SmartTube**: Clock settings → Extras → Install; open it; try touch; *Remote control* → link from the YouTube app.
+7. **Kiosk defaults** (with adb): test the `ks.provision` payload format (mic gain, Clock screensaver) — see below.
+8. **Publish v1.0.0** (draft is ready with all four APKs), add the repo topics (command below), then check the clock reports *up to date*. Later a tiny 1.0.1 proves the over-Wi-Fi update.
+9. **Factory reset** once: setup returns by itself (incl. ClockCore's mic permission, the Bluetooth name).
+
 ## Open: next up
 - [ ] Kiosk Satellite defaults through its `ProvisionActivity` (`ks.provision`, needs `DUMP`, which a priv-app can hold): microphone gain (~+17 dB), Clock screensaver with Night mode. Payload format undocumented: test on the clock over adb with a harmless payload first.
 - [ ] On the clock (build 7): media controls with Bluetooth audio, the Bluetooth pairing tile and the *Smart Clock 2* name, SmartTube install + casting + how usable touch is.
@@ -24,7 +35,7 @@
 - [ ] WebView: a stable official download source would allow auto-fetch (APKMirror blocks scripted downloads); keep the manual file option.
 - [ ] Remove the 5 still-visible disabled system apps from the image (needs re-hashing system; see the discussion in git history).
 - [ ] CI: GitHub Action running the HA tests, hassfest and HACS validation on every push.
-- [ ] HA: switches for app updates and the mic anchor; diagnostics download; translations (contributions welcome).
+- [ ] HA: translations (contributions welcome); integration icon via home-assistant/brands.
 - [ ] Onboarding: a QR code for the Kiosk Satellite Remote page.
 - Not possible: flashing through the dock (its USB-A port is power only).
 

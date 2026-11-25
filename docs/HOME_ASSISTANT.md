@@ -23,6 +23,7 @@ The integration then registers its own webhook on the clock (no `set_webhook` ne
 | `button.…_run_volume_hold_action`, `…_run_volume_−_hold_action`, `…_run_tap_action`, `…_run_double_tap_action` | run whatever that gesture is set to, as if you did it on the clock (ClockBridge 0.9.0+) |
 | `select.…_mute_indicator`, `…_colour`, `…_size` | mute indicator style |
 | `select.…_hold_volume_up`, `…_hold_volume_down`, `…_tap_on_top`, `…_double_tap_on_top`, `…_tap_while_ringing`, `…_double_tap_while_ringing`, `…_double_tap_speed` | what each gesture does (see *Gestures*) |
+| `switch.…_automatic_app_updates`, `…_mic_anchor` (hidden by default) | install newer ROM apps from GitHub; ClockCore's mic anchor (1.0.0+) |
 | `select.…_media_controls` | the on-clock media controls: *Automatic* (mini player), *Only with ♫*, *Off* |
 | `sensor.…_kiosk_satellite_version`, `…_webview_version`, `…_kiosk_update_status` | diagnostics |
 | `update.…_kiosk_clock_apps` | the ROM's apps vs this repo's latest release, with release notes; *Install* makes the clock update now (ClockBridge 1.0.0+) |
