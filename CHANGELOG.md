@@ -2,6 +2,9 @@
 
 Clocks on 1.0.1 or newer update the ROM's apps by themselves over Wi-Fi. Releases marked **flash** also change the image: rebuild and `./clockrom.sh flash` (keeps your data).
 
+## 1.1.2 (2026-11-27)
+- The clock's apps carry the release version again (1.1.1 shipped them as 1.1.0, so Home Assistant kept offering an update). They update over Wi-Fi; nothing else changes.
+
 ## 1.1.1 (2026-11-27)
 - The Kiosk Clock integration has its own icon in Home Assistant (2026.3+).
 - Changelog, issue templates, contributing guide; the TODO list cleaned up.

@@ -14,7 +14,7 @@ Thanks for helping! A few things that keep this project safe and maintainable:
 
 ## Changes on the clock
 - Privileged permissions an app requests must be listed in `rom/product/etc/permissions/privapp-permissions-kioskclock.xml`, or Android refuses to boot. `scripts/build/check_privapp.py` checks it during the build.
-- Bump `versionCode` in the app's `AndroidManifest.xml` for every release: clocks only install a higher version.
+- Every release ships ClockBridge and KioskNav with `versionName` = the release version (and a higher `versionCode`), even when only docs or the integration changed: clocks only install a higher version, and Home Assistant's update entity compares the clock's ClockBridge version with the latest release tag. Never move or rewrite a published tag; make a new release.
 - ClockBridge and KioskNav update over Wi-Fi; ClockCore, overlays and `rom/` changes need a flash (mark those releases **flash** in `CHANGELOG.md`).
 - Setup defaults live in `rom/product/etc/kioskclock/provision.json`. Bump `version` to re-run it on existing clocks; a re-run only fills in settings that are still unset.
 
