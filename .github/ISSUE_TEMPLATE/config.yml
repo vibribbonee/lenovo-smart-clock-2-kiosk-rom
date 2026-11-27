@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Troubleshooting guide
+    url: https://github.com/vibribbonee/lenovo-smart-clock-2-kiosk-rom/blob/main/docs/TROUBLESHOOTING.md
+    about: Common problems (flashing, voice, pairing, Bluetooth) and how to fix them.
+  - name: Kiosk Satellite (the clock's interface, alarms, voice satellite)
+    url: https://github.com/jxlarrea/kiosk-satellite/issues
+    about: Problems inside Kiosk Satellite itself belong there.

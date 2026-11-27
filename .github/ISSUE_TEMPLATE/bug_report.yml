@@ -1,0 +1,53 @@
+name: Bug report
+description: Something on the clock or in the Home Assistant integration doesn't work as expected.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks! Before filing, please check [docs/TROUBLESHOOTING.md](https://github.com/vibribbonee/lenovo-smart-clock-2-kiosk-rom/blob/main/docs/TROUBLESHOOTING.md).
+        **Never paste your API token, Wi-Fi password, or your backup files** (they contain your clock's serial and MAC addresses).
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: How to reproduce
+      placeholder: "1. Swipe down from the top edge… 2. …"
+  - type: input
+    id: version
+    attributes:
+      label: Kiosk Clock version
+      description: Home Assistant → the clock's *Kiosk Clock apps* update entity, or the release you flashed.
+      placeholder: "1.1.1"
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where
+      options:
+        - Building / flashing (clockrom.sh)
+        - On the clock (nav bar, quick panel, settings, gestures, alarms, media)
+        - Voice / microphone
+        - Bluetooth speaker
+        - Home Assistant integration
+        - Updates over Wi-Fi
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Home Assistant diagnostics (for integration problems)
+      description: Settings → Devices & services → Kiosk Clock → the clock → ⋮ → Download diagnostics. The token is removed automatically; attach the file.
+  - type: textarea
+    id: log
+    attributes:
+      label: Clock log (for problems on the clock)
+      description: "With the pogo cable and adb: `adb logcat -d | grep -E \"ClockBridge|ClockCore|KioskNav\"`"
+      render: text

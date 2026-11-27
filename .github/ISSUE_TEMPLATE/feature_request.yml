@@ -1,0 +1,15 @@
+name: Feature request
+description: An idea for the ROM or the Home Assistant integration.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like the clock to do?
+      description: Describe it from the point of view of using the clock; how it could be built is optional.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why / when would you use it?

@@ -5,7 +5,7 @@ Turns a Lenovo Smart Clock 2 (CD‑24502F, MediaTek MT8167S, Android 10, 1 GB RA
 > **Disclaimer.** Not affiliated with Lenovo, Google or MediaTek. This repository contains **only scripts, our own apps and documentation — no Lenovo firmware**. You build the ROM from a backup of *your own* clock. Unlocking and flashing can brick a device; the backup/restore path documented here is tested on one unit, not guaranteed for yours. Use at your own risk.
 
 ## Status
-Built from stock firmware **1.2.2.627** and running daily on a real clock (KioskNav/ClockBridge 0.8.0). Tested on one unit. Still open: the factory-reset test and a few on-device checks — see [docs/TODO.md](docs/TODO.md).
+**1.1.1**, built from stock firmware **1.2.2.627** and running daily on a real clock. Tested on one unit. What changed per release: [CHANGELOG.md](CHANGELOG.md); still open (factory-reset test, out-of-the-box Kiosk defaults): [docs/TODO.md](docs/TODO.md).
 
 ## What you get
 | | |
